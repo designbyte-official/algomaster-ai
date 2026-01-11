@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LoadingSpinner } from "@/components/common/ui/loading-spinner"
 import { CodePlayground } from "@/components/features/learning/code-editor/code-playground"
 import { DataStructureVisualizer } from "@/components/features/learning/visualizers/data-structure-visualizer"
+import { PracticeView } from "@/components/features/learning/views/practice-view"
 import { TopicSidebar } from "@/components/features/docs/topic-sidebar"
 
 // Force dynamic rendering if we want to ensure fresh data,
@@ -51,7 +52,7 @@ export default async function DocsArticlePage({
 
   return (
     <div className="flex w-full h-full">
-      <div className="flex-1 min-w-0 overflow-y-auto">
+      <div id="main-scroll-area" className="flex-1 min-w-0 overflow-y-auto scroll-smooth">
         <div className="max-w-4xl px-6 py-8">
           <div className="space-y-8">
             <div className="space-y-4">
@@ -75,9 +76,10 @@ export default async function DocsArticlePage({
             <Separator />
 
             <Tabs defaultValue="explanation" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+              <TabsList className="grid w-full grid-cols-4 lg:w-[800px]">
                 <TabsTrigger value="explanation">Explanation</TabsTrigger>
                 <TabsTrigger value="visualizer">Visualizer</TabsTrigger>
+                <TabsTrigger value="practice">Practice</TabsTrigger>
                 <TabsTrigger value="code">Code Interpreter</TabsTrigger>
               </TabsList>
 
@@ -116,6 +118,20 @@ export default async function DocsArticlePage({
                     }
                   >
                     <DataStructureVisualizer topic={topic} />
+                  </Suspense>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="practice" className="mt-6">
+                <div className="min-h-[600px]">
+                  <Suspense
+                    fallback={
+                      <div className="flex h-[600px] items-center justify-center">
+                        <LoadingSpinner size="lg" />
+                      </div>
+                    }
+                  >
+                    <PracticeView topic={topic} />
                   </Suspense>
                 </div>
               </TabsContent>

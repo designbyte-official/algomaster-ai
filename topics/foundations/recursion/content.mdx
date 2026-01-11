@@ -4,16 +4,7 @@
 
 ## Visual Metaphor
 
-```
-factorial(4)
-    └── 4 × factorial(3)
-             └── 3 × factorial(2)
-                      └── 2 × factorial(1)
-                               └── 1  ← Base Case!
-                      └── 2 × 1 = 2
-             └── 3 × 2 = 6
-    └── 4 × 6 = 24 ← Final Answer!
-```
+![Recursive Factorial Trace](/images/docs/recursion_factorial_trace.png)
 
 ---
 
@@ -42,22 +33,7 @@ The function calls itself with a **smaller/simpler input**.
 
 ## How Recursion Works: The Call Stack
 
-```
-Call Stack:
-┌──────────────────┐
-│ factorial(1) → 1 │  ← Top (Current)
-├──────────────────┤
-│ factorial(2)     │
-├──────────────────┤
-│ factorial(3)     │
-├──────────────────┤
-│ factorial(4)     │  ← Bottom (Original call)
-└──────────────────┘
-
-1. Each call pushes onto stack
-2. Base case returns value
-3. Stack unwinds, combining results
-```
+![Call Stack Visualization](/images/docs/recursion_call_stack.png)
 
 ---
 

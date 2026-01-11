@@ -80,6 +80,12 @@ export interface PracticeProblem {
   description: string
   difficulty: "Easy" | "Medium" | "Hard"
   starterCode?: Record<SupportedLanguage, string>
+  testCases?: {
+    input: any
+    expectedOutput: any
+    explanation?: string
+  }[]
+  hints?: string[]
 }
 
 export interface ChatMessage {
