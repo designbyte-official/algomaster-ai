@@ -1,49 +1,71 @@
-# Linked List
+# Linked Lists
 
-A **Linked List** is a linear data structure where elements are stored in nodes, and each node points to the next node in the sequence. Unlike arrays, elements are not stored in contiguous memory.
+> [!NOTE]
+> **Core Concept**: A Linked List is a linear data structure where elements are not stored in contiguous memory. Instead, each element (node) points to the next, creating a chain.
+
+Unlike arrays, Linked Lists act like a scavenger hunt: you must find the first item to know where the next one is. This flexibility allows for efficient **O(1)** insertions and deletions at the beginning, but makes access slower (**O(n)**).
+
+---
 
 ## Visual Representation
 
 ### Singly Linked List
+Each node contains **data** and a **next** pointer.
 
-```
-HEAD → [1|→] → [2|→] → [3|→] → [4|→] → NULL
-        ↑        ↑        ↑        ↑
-      data    data     data     data
-       +       +        +        +
-      next    next     next     next
+```mermaid
+graph LR
+    subgraph Singly Linked List
+        direction LR
+        A((1)) --> B((2))
+        B --> C((3))
+        C --> D((4))
+        D -- next --> NULL[NULL]
+    end
+    style A fill:#e1f5fe,stroke:#01579b
+    style B fill:#e1f5fe,stroke:#01579b
+    style C fill:#e1f5fe,stroke:#01579b
+    style D fill:#e1f5fe,stroke:#01579b
 ```
 
 ### Doubly Linked List
+Each node has **prev**, **data**, and **next**. Allows traversal in both directions.
 
-```
-NULL ← [←|1|→] ⟺ [←|2|→] ⟺ [←|3|→] → NULL
-          ↑          ↑          ↑
-        prev       prev       prev
-        data       data       data
-        next       next       next
+```mermaid
+graph LR
+    subgraph Doubly Linked List
+        direction LR
+        NULL1[NULL] <-- prev -- A((1))
+        A -- next --> B((2))
+        B -- prev --> A
+        B -- next --> C((3))
+        C -- prev --> B
+        C -- next --> NULL2[NULL]
+    end
+    style A fill:#e8f5e9,stroke:#2e7d32
+    style B fill:#e8f5e9,stroke:#2e7d32
+    style C fill:#e8f5e9,stroke:#2e7d32
 ```
 
 ---
 
-## Time Complexity
+## Complexity Analysis
 
-| Operation | Array | Linked List |
-|-----------|-------|-------------|
-| Access by index | O(1) | O(n) |
-| Insert at beginning | O(n) | **O(1)** |
-| Insert at end | O(1)* | O(n) or O(1)** |
-| Insert at middle | O(n) | **O(1)*** |
-| Delete at beginning | O(n) | **O(1)** |
-| Search | O(n) | O(n) |
+| Operation | Array | Linked List | Explanation |
+|-----------|-------|-------------|-------------|
+| **Access** | **O(1)** | **O(n)** | Must traverse from Head to find `k-th` element. |
+| **Search** | **O(n)** | **O(n)** | Scan linearly. |
+| **Insert (Head)** | O(n) | **O(1)** | Just update the Head pointer. |
+| **Insert (Tail)** | O(1)* | **O(1)** | With a Tail pointer (else O(n)). |
+| **Delete (Head)** | O(n) | **O(1)** | Just update the Head pointer. |
 
-*Amortized, **With tail pointer, ***If you have reference to previous node
+> [!TIP]
+> **When to use**: Use Linked Lists when you need constant-time insertions/deletions at the start or end and don't require random access (like accessing the 500th element directly).
 
 ---
 
 ## Implementation
 
-### Singly Linked List
+### Singly Linked List Structure
 
 ```multi
 [javascript]
@@ -60,115 +82,28 @@ class LinkedList {
         this.size = 0;
     }
     
+    // O(1)
     insertAtHead(val) {
         const newNode = new ListNode(val, this.head);
         this.head = newNode;
         this.size++;
     }
     
+    // O(n) without tail pointer
     insertAtTail(val) {
         const newNode = new ListNode(val);
         if (!this.head) {
             this.head = newNode;
-        } else {
-            let current = this.head;
-            while (current.next) {
-                current = current.next;
-            }
-            current.next = newNode;
-        }
-        this.size++;
-    }
-    
-    insertAtIndex(index, val) {
-        if (index < 0 || index > this.size) {
-            throw new Error("Index out of bounds");
-        }
-        if (index === 0) {
-            this.insertAtHead(val);
             return;
         }
-        
-        const newNode = new ListNode(val);
         let current = this.head;
-        for (let i = 0; i < index - 1; i++) {
+        while (current.next) {
             current = current.next;
         }
-        newNode.next = current.next;
         current.next = newNode;
         this.size++;
     }
-    
-    deleteAtHead() {
-        if (!this.head) return null;
-        const val = this.head.val;
-        this.head = this.head.next;
-        this.size--;
-        return val;
-    }
-    
-    deleteAtIndex(index) {
-        if (index < 0 || index >= this.size) {
-            throw new Error("Index out of bounds");
-        }
-        if (index === 0) return this.deleteAtHead();
-        
-        let current = this.head;
-        for (let i = 0; i < index - 1; i++) {
-            current = current.next;
-        }
-        const val = current.next.val;
-        current.next = current.next.next;
-        this.size--;
-        return val;
-    }
-    
-    search(val) {
-        let current = this.head;
-        let index = 0;
-        while (current) {
-            if (current.val === val) return index;
-            current = current.next;
-            index++;
-        }
-        return -1;
-    }
-    
-    get(index) {
-        if (index < 0 || index >= this.size) {
-            throw new Error("Index out of bounds");
-        }
-        let current = this.head;
-        for (let i = 0; i < index; i++) {
-            current = current.next;
-        }
-        return current.val;
-    }
-    
-    toArray() {
-        const result = [];
-        let current = this.head;
-        while (current) {
-            result.push(current.val);
-            current = current.next;
-        }
-        return result;
-    }
-    
-    toString() {
-        return this.toArray().join(' -> ') + ' -> null';
-    }
 }
-
-// Usage
-const ll = new LinkedList();
-ll.insertAtTail(1);
-ll.insertAtTail(2);
-ll.insertAtTail(3);
-ll.insertAtHead(0);
-console.log(ll.toString()); // 0 -> 1 -> 2 -> 3 -> null
-console.log(ll.search(2));  // 2
-
 [python]
 class ListNode:
     def __init__(self, val=0, next=None):
@@ -181,1015 +116,157 @@ class LinkedList:
         self.size = 0
     
     def insert_at_head(self, val):
-        """Insert at beginning - O(1)"""
-        new_node = ListNode(val)
-        new_node.next = self.head
+        # O(1)
+        new_node = ListNode(val, self.head)
         self.head = new_node
         self.size += 1
     
     def insert_at_tail(self, val):
-        """Insert at end - O(n)"""
+        # O(n)
         new_node = ListNode(val)
         if not self.head:
             self.head = new_node
-        else:
-            current = self.head
-            while current.next:
-                current = current.next
-            current.next = new_node
-        self.size += 1
-    
-    def insert_at_index(self, index, val):
-        """Insert at specific index - O(n)"""
-        if index < 0 or index > self.size:
-            raise IndexError("Index out of bounds")
-        
-        if index == 0:
-            self.insert_at_head(val)
             return
-        
-        new_node = ListNode(val)
         current = self.head
-        for _ in range(index - 1):
+        while current.next:
             current = current.next
-        
-        new_node.next = current.next
         current.next = new_node
         self.size += 1
-    
-    def delete_at_head(self):
-        """Delete first element - O(1)"""
-        if not self.head:
-            raise IndexError("List is empty")
-        
-        val = self.head.val
-        self.head = self.head.next
-        self.size -= 1
-        return val
-    
-    def delete_at_index(self, index):
-        """Delete at specific index - O(n)"""
-        if index < 0 or index >= self.size:
-            raise IndexError("Index out of bounds")
-        
-        if index == 0:
-            return self.delete_at_head()
-        
-        current = self.head
-        for _ in range(index - 1):
-            current = current.next
-        
-        val = current.next.val
-        current.next = current.next.next
-        self.size -= 1
-        return val
-    
-    def search(self, val):
-        """Find index of value - O(n)"""
-        current = self.head
-        index = 0
-        while current:
-            if current.val == val:
-                return index
-            current = current.next
-            index += 1
-        return -1
-    
-    def get(self, index):
-        """Get value at index - O(n)"""
-        if index < 0 or index >= self.size:
-            raise IndexError("Index out of bounds")
-        
-        current = self.head
-        for _ in range(index):
-            current = current.next
-        return current.val
-    
-    def to_list(self):
-        """Convert to Python list - O(n)"""
-        result = []
-        current = self.head
-        while current:
-            result.append(current.val)
-            current = current.next
-        return result
-    
-    def __str__(self):
-        return " -> ".join(map(str, self.to_list())) + " -> None"
-
-# Usage
-ll = LinkedList()
-ll.insert_at_tail(1)
-ll.insert_at_tail(2)
-ll.insert_at_tail(3)
-ll.insert_at_head(0)
-print(ll)  # 0 -> 1 -> 2 -> 3 -> None
-print(ll.search(2))  # 2
-
 [java]
-public class LinkedList<T> {
-    private class Node {
-        T data;
-        Node next;
-        
-        Node(T data) {
-            this.data = data;
-            this.next = null;
-        }
-    }
+class ListNode {
+    int val;
+    ListNode next;
+    ListNode(int val) { this.val = val; }
+}
+
+class LinkedList {
+    ListNode head;
+    int size;
     
-    private Node head;
-    private int size;
-    
-    public LinkedList() {
-        head = null;
-        size = 0;
-    }
-    
-    public void insertAtHead(T data) {
-        Node newNode = new Node(data);
+    // O(1)
+    public void insertAtHead(int val) {
+        ListNode newNode = new ListNode(val);
         newNode.next = head;
         head = newNode;
         size++;
     }
     
-    public void insertAtTail(T data) {
-        Node newNode = new Node(data);
+    // O(n)
+    public void insertAtTail(int val) {
+        ListNode newNode = new ListNode(val);
         if (head == null) {
             head = newNode;
-        } else {
-            Node current = head;
-            while (current.next != null) {
-                current = current.next;
-            }
-            current.next = newNode;
-        }
-        size++;
-    }
-    
-    public void insertAtIndex(int index, T data) {
-        if (index < 0 || index > size) {
-            throw new IndexOutOfBoundsException();
-        }
-        if (index == 0) {
-            insertAtHead(data);
             return;
         }
-        
-        Node newNode = new Node(data);
-        Node current = head;
-        for (int i = 0; i < index - 1; i++) {
+        ListNode current = head;
+        while (current.next != null) {
             current = current.next;
         }
-        newNode.next = current.next;
         current.next = newNode;
         size++;
     }
-    
-    public T deleteAtHead() {
-        if (head == null) {
-            throw new RuntimeException("List is empty");
-        }
-        T data = head.data;
-        head = head.next;
-        size--;
-        return data;
-    }
-    
-    public int search(T data) {
-        Node current = head;
-        int index = 0;
-        while (current != null) {
-            if (current.data.equals(data)) return index;
-            current = current.next;
-            index++;
-        }
-        return -1;
-    }
-    
-    public T get(int index) {
-        if (index < 0 || index >= size) {
-            throw new IndexOutOfBoundsException();
-        }
-        Node current = head;
-        for (int i = 0; i < index; i++) {
-            current = current.next;
-        }
-        return current.data;
-    }
-    
-    public int size() { return size; }
-    public boolean isEmpty() { return size == 0; }
-    
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        Node current = head;
-        while (current != null) {
-            sb.append(current.data).append(" -> ");
-            current = current.next;
-        }
-        sb.append("null");
-        return sb.toString();
-    }
 }
-
 [cpp]
-#include <iostream>
-#include <stdexcept>
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
 
-template <typename T>
 class LinkedList {
-private:
-    struct Node {
-        T data;
-        Node* next;
-        Node(T val) : data(val), next(nullptr) {}
-    };
-    
-    Node* head;
-    int size;
-    
+    ListNode* head;
 public:
-    LinkedList() : head(nullptr), size(0) {}
+    LinkedList() : head(nullptr) {}
     
-    ~LinkedList() {
-        while (head) {
-            Node* temp = head;
-            head = head->next;
-            delete temp;
-        }
-    }
-    
-    void insertAtHead(T data) {
-        Node* newNode = new Node(data);
+    // O(1)
+    void insertAtHead(int val) {
+        ListNode* newNode = new ListNode(val);
         newNode->next = head;
         head = newNode;
-        size++;
     }
     
-    void insertAtTail(T data) {
-        Node* newNode = new Node(data);
+    // O(n)
+    void insertAtTail(int val) {
+        ListNode* newNode = new ListNode(val);
         if (!head) {
             head = newNode;
-        } else {
-            Node* current = head;
-            while (current->next) {
-                current = current->next;
-            }
-            current->next = newNode;
-        }
-        size++;
-    }
-    
-    void insertAtIndex(int index, T data) {
-        if (index < 0 || index > size) {
-            throw std::out_of_range("Index out of bounds");
-        }
-        if (index == 0) {
-            insertAtHead(data);
             return;
         }
-        
-        Node* newNode = new Node(data);
-        Node* current = head;
-        for (int i = 0; i < index - 1; i++) {
+        ListNode* current = head;
+        while (current->next) {
             current = current->next;
         }
-        newNode->next = current->next;
         current->next = newNode;
-        size++;
     }
-    
-    T deleteAtHead() {
-        if (!head) throw std::runtime_error("List is empty");
-        T data = head->data;
-        Node* temp = head;
-        head = head->next;
-        delete temp;
-        size--;
-        return data;
-    }
-    
-    int search(T data) {
-        Node* current = head;
-        int index = 0;
-        while (current) {
-            if (current->data == data) return index;
-            current = current->next;
-            index++;
-        }
-        return -1;
-    }
-    
-    T get(int index) {
-        if (index < 0 || index >= size) {
-            throw std::out_of_range("Index out of bounds");
-        }
-        Node* current = head;
-        for (int i = 0; i < index; i++) {
-            current = current->next;
-        }
-        return current->data;
-    }
-    
-    int getSize() { return size; }
-    bool isEmpty() { return size == 0; }
 };
 ```
 
 ---
 
-## Common Problems & Solutions
+## Common Algorithmic Patterns
 
-### 1. Reverse a Linked List
+### 1. Fast & Slow Pointers (Tortoise & Hare)
+A powerful technique for analyzing structure without extra space.
+*   **Time**: O(n)
+*   **Space**: O(1)
 
-```multi
-[javascript]
-function reverseList(head) {
-    let prev = null;
-    let current = head;
-    
-    while (current) {
-        const nextNode = current.next;  // Save next
-        current.next = prev;            // Reverse link
-        prev = current;                 // Move prev forward
-        current = nextNode;             // Move current forward
+> **Use Cases**: Detecting cycles, finding the middle node, finding the start of a cycle.
+
+**Middle of Linked List**:
+```javascript
+function findMiddle(head) {
+    let slow = head, fast = head;
+    while (fast && fast.next) {
+        slow = slow.next;       // 1 step
+        fast = fast.next.next;  // 2 steps
     }
-    
-    return prev;  // New head
+    return slow; // When fast reaches end, slow is at middle
 }
+```
 
-// Recursive version
-function reverseListRecursive(head) {
-    if (!head || !head.next) return head;
-    
-    const newHead = reverseListRecursive(head.next);
-    head.next.next = head;
-    head.next = null;
-    
-    return newHead;
-}
+### 2. Reversing a Linked List
+The classic interview problem. It requires manipulating pointers precisely.
 
-[python]
+```mermaid
+graph LR
+    subgraph Before
+        direction LR
+        A((1)) --> B((2))
+        B --> C((3))
+        C --> NULL
+    end
+    subgraph After
+        direction RL
+        C_new((3)) --> B_new((2))
+        B_new --> A_new((1))
+        A_new --> NULL_new[NULL]
+    end
+```
+
+```python
 def reverse_list(head):
-    """
-    Reverse a singly linked list.
-    1 -> 2 -> 3 -> None  becomes  3 -> 2 -> 1 -> None
-    Time: O(n), Space: O(1)
-    """
     prev = None
     current = head
-    
     while current:
         next_node = current.next  # Save next
-        current.next = prev       # Reverse link
-        prev = current            # Move prev forward
-        current = next_node       # Move current forward
-    
+        current.next = prev       # Reverse arrow
+        prev = current            # swift prev
+        current = next_node       # shift current
     return prev  # New head
-
-# Recursive version
-def reverse_list_recursive(head):
-    if not head or not head.next:
-        return head
-    
-    new_head = reverse_list_recursive(head.next)
-    head.next.next = head
-    head.next = None
-    
-    return new_head
-
-[java]
-public ListNode reverseList(ListNode head) {
-    ListNode prev = null;
-    ListNode current = head;
-    
-    while (current != null) {
-        ListNode nextNode = current.next;  // Save next
-        current.next = prev;               // Reverse link
-        prev = current;                    // Move prev forward
-        current = nextNode;                // Move current forward
-    }
-    
-    return prev;  // New head
-}
-
-// Recursive version
-public ListNode reverseListRecursive(ListNode head) {
-    if (head == null || head.next == null) return head;
-    
-    ListNode newHead = reverseListRecursive(head.next);
-    head.next.next = head;
-    head.next = null;
-    
-    return newHead;
-}
-
-[cpp]
-ListNode* reverseList(ListNode* head) {
-    ListNode* prev = nullptr;
-    ListNode* current = head;
-    
-    while (current) {
-        ListNode* nextNode = current->next;  // Save next
-        current->next = prev;                // Reverse link
-        prev = current;                      // Move prev forward
-        current = nextNode;                  // Move current forward
-    }
-    
-    return prev;  // New head
-}
-
-// Recursive version
-ListNode* reverseListRecursive(ListNode* head) {
-    if (!head || !head->next) return head;
-    
-    ListNode* newHead = reverseListRecursive(head->next);
-    head->next->next = head;
-    head->next = nullptr;
-    
-    return newHead;
-}
-```
-
-### 2. Detect Cycle (Floyd's Algorithm)
-
-```multi
-[javascript]
-function hasCycle(head) {
-    let slow = head;
-    let fast = head;
-    
-    while (fast && fast.next) {
-        slow = slow.next;
-        fast = fast.next.next;
-        
-        if (slow === fast) {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-function findCycleStart(head) {
-    let slow = head;
-    let fast = head;
-    
-    // Detect cycle
-    while (fast && fast.next) {
-        slow = slow.next;
-        fast = fast.next.next;
-        if (slow === fast) break;
-    }
-    
-    if (!fast || !fast.next) return null;  // No cycle
-    
-    // Find cycle start
-    slow = head;
-    while (slow !== fast) {
-        slow = slow.next;
-        fast = fast.next;
-    }
-    
-    return slow;
-}
-
-[python]
-def has_cycle(head):
-    """
-    Detect if linked list has a cycle.
-    Time: O(n), Space: O(1)
-    """
-    slow = fast = head
-    
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-        
-        if slow == fast:
-            return True
-    
-    return False
-
-def find_cycle_start(head):
-    """Find the node where cycle begins."""
-    slow = fast = head
-    
-    # Detect cycle
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-        if slow == fast:
-            break
-    else:
-        return None  # No cycle
-    
-    # Find cycle start
-    slow = head
-    while slow != fast:
-        slow = slow.next
-        fast = fast.next
-    
-    return slow
-
-[java]
-public boolean hasCycle(ListNode head) {
-    ListNode slow = head;
-    ListNode fast = head;
-    
-    while (fast != null && fast.next != null) {
-        slow = slow.next;
-        fast = fast.next.next;
-        
-        if (slow == fast) {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-public ListNode findCycleStart(ListNode head) {
-    ListNode slow = head;
-    ListNode fast = head;
-    
-    // Detect cycle
-    while (fast != null && fast.next != null) {
-        slow = slow.next;
-        fast = fast.next.next;
-        if (slow == fast) break;
-    }
-    
-    if (fast == null || fast.next == null) return null;
-    
-    // Find cycle start
-    slow = head;
-    while (slow != fast) {
-        slow = slow.next;
-        fast = fast.next;
-    }
-    
-    return slow;
-}
-
-[cpp]
-bool hasCycle(ListNode* head) {
-    ListNode* slow = head;
-    ListNode* fast = head;
-    
-    while (fast && fast->next) {
-        slow = slow->next;
-        fast = fast->next->next;
-        
-        if (slow == fast) {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-ListNode* findCycleStart(ListNode* head) {
-    ListNode* slow = head;
-    ListNode* fast = head;
-    
-    // Detect cycle
-    while (fast && fast->next) {
-        slow = slow->next;
-        fast = fast->next->next;
-        if (slow == fast) break;
-    }
-    
-    if (!fast || !fast->next) return nullptr;
-    
-    // Find cycle start
-    slow = head;
-    while (slow != fast) {
-        slow = slow->next;
-        fast = fast->next;
-    }
-    
-    return slow;
-}
-```
-
-### 3. Find Middle Node
-
-```multi
-[javascript]
-function findMiddle(head) {
-    let slow = head;
-    let fast = head;
-    
-    while (fast && fast.next) {
-        slow = slow.next;
-        fast = fast.next.next;
-    }
-    
-    return slow;  // Middle node
-}
-
-// For [1, 2, 3, 4, 5] returns node with value 3
-// For [1, 2, 3, 4] returns node with value 3 (second middle)
-
-[python]
-def find_middle(head):
-    """
-    Find middle node using slow/fast pointers.
-    Time: O(n), Space: O(1)
-    """
-    slow = fast = head
-    
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-    
-    return slow  # Middle node
-
-# For [1, 2, 3, 4, 5] returns node with value 3
-# For [1, 2, 3, 4] returns node with value 3 (second middle)
-
-[java]
-public ListNode findMiddle(ListNode head) {
-    ListNode slow = head;
-    ListNode fast = head;
-    
-    while (fast != null && fast.next != null) {
-        slow = slow.next;
-        fast = fast.next.next;
-    }
-    
-    return slow;  // Middle node
-}
-
-// For [1, 2, 3, 4, 5] returns node with value 3
-// For [1, 2, 3, 4] returns node with value 3 (second middle)
-
-[cpp]
-ListNode* findMiddle(ListNode* head) {
-    ListNode* slow = head;
-    ListNode* fast = head;
-    
-    while (fast && fast->next) {
-        slow = slow->next;
-        fast = fast->next->next;
-    }
-    
-    return slow;  // Middle node
-}
-
-// For [1, 2, 3, 4, 5] returns node with value 3
-// For [1, 2, 3, 4] returns node with value 3 (second middle)
-```
-
-### 4. Merge Two Sorted Lists
-
-```multi
-[javascript]
-function mergeTwoLists(l1, l2) {
-    const dummy = new ListNode(0);
-    let current = dummy;
-    
-    while (l1 && l2) {
-        if (l1.val <= l2.val) {
-            current.next = l1;
-            l1 = l1.next;
-        } else {
-            current.next = l2;
-            l2 = l2.next;
-        }
-        current = current.next;
-    }
-    
-    current.next = l1 || l2;
-    return dummy.next;
-}
-
-[python]
-def merge_two_lists(l1, l2):
-    """
-    Merge two sorted linked lists.
-    Time: O(n + m), Space: O(1)
-    """
-    dummy = ListNode(0)
-    current = dummy
-    
-    while l1 and l2:
-        if l1.val <= l2.val:
-            current.next = l1
-            l1 = l1.next
-        else:
-            current.next = l2
-            l2 = l2.next
-        current = current.next
-    
-    current.next = l1 or l2
-    return dummy.next
-
-[java]
-public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
-    ListNode dummy = new ListNode(0);
-    ListNode current = dummy;
-    
-    while (l1 != null && l2 != null) {
-        if (l1.val <= l2.val) {
-            current.next = l1;
-            l1 = l1.next;
-        } else {
-            current.next = l2;
-            l2 = l2.next;
-        }
-        current = current.next;
-    }
-    
-    current.next = (l1 != null) ? l1 : l2;
-    return dummy.next;
-}
-
-[cpp]
-ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
-    ListNode dummy(0);
-    ListNode* current = &dummy;
-    
-    while (l1 && l2) {
-        if (l1->val <= l2->val) {
-            current->next = l1;
-            l1 = l1->next;
-        } else {
-            current->next = l2;
-            l2 = l2->next;
-        }
-        current = current->next;
-    }
-    
-    current->next = l1 ? l1 : l2;
-    return dummy.next;
-}
-```
-
-### 5. Remove Nth Node from End
-
-```multi
-[javascript]
-function removeNthFromEnd(head, n) {
-    const dummy = new ListNode(0, head);
-    let slow = dummy;
-    let fast = dummy;
-    
-    // Move fast n+1 steps ahead
-    for (let i = 0; i <= n; i++) {
-        fast = fast.next;
-    }
-    
-    // Move both until fast reaches end
-    while (fast) {
-        slow = slow.next;
-        fast = fast.next;
-    }
-    
-    // Remove the nth node
-    slow.next = slow.next.next;
-    
-    return dummy.next;
-}
-
-[python]
-def remove_nth_from_end(head, n):
-    """
-    Remove nth node from end in one pass.
-    Time: O(n), Space: O(1)
-    """
-    dummy = ListNode(0, head)
-    slow = fast = dummy
-    
-    # Move fast n+1 steps ahead
-    for _ in range(n + 1):
-        fast = fast.next
-    
-    # Move both until fast reaches end
-    while fast:
-        slow = slow.next
-        fast = fast.next
-    
-    # Remove the nth node
-    slow.next = slow.next.next
-    
-    return dummy.next
-
-[java]
-public ListNode removeNthFromEnd(ListNode head, int n) {
-    ListNode dummy = new ListNode(0, head);
-    ListNode slow = dummy;
-    ListNode fast = dummy;
-    
-    // Move fast n+1 steps ahead
-    for (int i = 0; i <= n; i++) {
-        fast = fast.next;
-    }
-    
-    // Move both until fast reaches end
-    while (fast != null) {
-        slow = slow.next;
-        fast = fast.next;
-    }
-    
-    // Remove the nth node
-    slow.next = slow.next.next;
-    
-    return dummy.next;
-}
-
-[cpp]
-ListNode* removeNthFromEnd(ListNode* head, int n) {
-    ListNode dummy(0, head);
-    ListNode* slow = &dummy;
-    ListNode* fast = &dummy;
-    
-    // Move fast n+1 steps ahead
-    for (int i = 0; i <= n; i++) {
-        fast = fast->next;
-    }
-    
-    // Move both until fast reaches end
-    while (fast) {
-        slow = slow->next;
-        fast = fast->next;
-    }
-    
-    // Remove the nth node
-    ListNode* toDelete = slow->next;
-    slow->next = slow->next->next;
-    delete toDelete;
-    
-    return dummy.next;
-}
-```
-
-### 6. Palindrome Linked List
-
-```multi
-[javascript]
-function isPalindrome(head) {
-    // Find middle
-    let slow = head;
-    let fast = head;
-    while (fast && fast.next) {
-        slow = slow.next;
-        fast = fast.next.next;
-    }
-    
-    // Reverse second half
-    let prev = null;
-    while (slow) {
-        const nextNode = slow.next;
-        slow.next = prev;
-        prev = slow;
-        slow = nextNode;
-    }
-    
-    // Compare halves
-    let left = head;
-    let right = prev;
-    while (right) {
-        if (left.val !== right.val) {
-            return false;
-        }
-        left = left.next;
-        right = right.next;
-    }
-    
-    return true;
-}
-
-[python]
-def is_palindrome(head):
-    """
-    Check if linked list is palindrome.
-    Time: O(n), Space: O(1)
-    """
-    # Find middle
-    slow = fast = head
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-    
-    # Reverse second half
-    prev = None
-    while slow:
-        next_node = slow.next
-        slow.next = prev
-        prev = slow
-        slow = next_node
-    
-    # Compare halves
-    left, right = head, prev
-    while right:
-        if left.val != right.val:
-            return False
-        left = left.next
-        right = right.next
-    
-    return True
-
-[java]
-public boolean isPalindrome(ListNode head) {
-    // Find middle
-    ListNode slow = head;
-    ListNode fast = head;
-    while (fast != null && fast.next != null) {
-        slow = slow.next;
-        fast = fast.next.next;
-    }
-    
-    // Reverse second half
-    ListNode prev = null;
-    while (slow != null) {
-        ListNode nextNode = slow.next;
-        slow.next = prev;
-        prev = slow;
-        slow = nextNode;
-    }
-    
-    // Compare halves
-    ListNode left = head;
-    ListNode right = prev;
-    while (right != null) {
-        if (left.val != right.val) {
-            return false;
-        }
-        left = left.next;
-        right = right.next;
-    }
-    
-    return true;
-}
-
-[cpp]
-bool isPalindrome(ListNode* head) {
-    // Find middle
-    ListNode* slow = head;
-    ListNode* fast = head;
-    while (fast && fast->next) {
-        slow = slow->next;
-        fast = fast->next->next;
-    }
-    
-    // Reverse second half
-    ListNode* prev = nullptr;
-    while (slow) {
-        ListNode* nextNode = slow->next;
-        slow->next = prev;
-        prev = slow;
-        slow = nextNode;
-    }
-    
-    // Compare halves
-    ListNode* left = head;
-    ListNode* right = prev;
-    while (right) {
-        if (left->val != right->val) {
-            return false;
-        }
-        left = left->next;
-        right = right->next;
-    }
-    
-    return true;
-}
 ```
 
 ---
 
-## Linked List vs Array
+## Essential Practice Questions
 
-| Feature | Linked List | Array |
-|---------|-------------|-------|
-| Memory | Non-contiguous | Contiguous |
-| Size | Dynamic | Fixed (or resize) |
-| Access | O(n) | O(1) |
-| Insert/Delete at start | O(1) | O(n) |
-| Cache performance | Poor | Excellent |
-| Extra memory | Pointers overhead | None |
+| Difficulty | Problem | Concept |
+|:---:|---|---|
+| 🟢 | **Reverse Linked List** | Pointer Manipulation |
+| 🟢 | **Linked List Cycle** | Fast & Slow Pointers |
+| 🟢 | **Merge Two Sorted Lists** | Dummy Node, Pointers |
+| 🟡 | **Remove Nth Node From End** | Two Pointers (Gap) |
+| 🟡 | **Reorder List** | Middle, Reverse, Merge |
+| 🔴 | **Merge k Sorted Lists** | Min-Heap / Divide & Conquer |
 
----
-
-## When to Use Linked List
-
-| Use Linked List | Use Array |
-|-----------------|-----------|
-| Frequent insertions/deletions at beginning | Random access needed |
-| Unknown size, frequently changing | Fixed or rarely changing size |
-| Implementing stacks/queues | Memory efficiency important |
-| Don't need random access | Need cache performance |
-
----
-
-## Key Takeaways
-
-1. **Nodes + Pointers** - Elements stored separately, connected by references
-2. **O(1) insert/delete at head** - Major advantage over arrays
-3. **O(n) access** - Must traverse from head
-4. **Two-pointer technique** - Powerful for many problems (slow/fast)
-5. **Dummy node trick** - Simplifies edge cases
+> [!IMPORTANT]
+> Mastery of **Fast & Slow Pointers** is crucial. It converts O(n) space problems (using a set to track visited nodes) into O(1) space solutions.

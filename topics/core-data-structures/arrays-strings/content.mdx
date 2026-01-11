@@ -1,186 +1,145 @@
 # Arrays & Strings
 
-Arrays and strings are the **most fundamental data structures** in programming. Mastering them is essential for solving most coding problems.
+> [!NOTE]
+> **Core Concept**: Arrays and strings are the foundational building blocks of data storage. They represent contiguous blocks of memory, offering **O(1)** access but requiring **O(n)** time for insertions and deletions.
+
+Arrays and strings are the **most fundamental data structures** in programming. Mastering them is essential for solving most coding problems, as they form the basis for more complex structures like Hash Tables, Heaps, and Matrices.
+
+---
 
 ## Visual Representation
 
-```
-Array: [10, 20, 30, 40, 50]
-        ↑    ↑    ↑    ↑    ↑
-Index:  0    1    2    3    4
+### Array Memory Layout
+Arrays are stored in **contiguous** memory locations. This linear arrangement allows the computer to calculate the address of any element instantly using the formula:
+`Address = Base_Address + (Index × Element_Size)`
 
-Memory: Contiguous block
-┌────┬────┬────┬────┬────┐
-│ 10 │ 20 │ 30 │ 40 │ 50 │
-└────┴────┴────┴────┴────┘
- 0x00 0x04 0x08 0x0C 0x10  ← Memory addresses
+```mermaid
+graph LR
+    subgraph Memory [Memory Layout]
+        direction LR
+        A[index: 0<br>value: 10<br>addr: 0x00] --- B[index: 1<br>value: 20<br>addr: 0x04]
+        B --- C[index: 2<br>value: 30<br>addr: 0x08]
+        C --- D[index: 3<br>value: 40<br>addr: 0x0C]
+        D --- E[index: 4<br>value: 50<br>addr: 0x10]
+    end
+    style Memory fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style A fill:#e1f5fe,stroke:#01579b
+    style B fill:#e1f5fe,stroke:#01579b
+    style C fill:#e1f5fe,stroke:#01579b
+    style D fill:#e1f5fe,stroke:#01579b
+    style E fill:#e1f5fe,stroke:#01579b
 ```
 
 ---
 
 ## Arrays
 
-### Core Operations
+An array is a collection of items stored at contiguous memory locations. The idea is to store multiple items of the same type together.
 
-| Operation | Time Complexity | Description |
+### Complexity Analysis
+
+| Operation | Time Complexity | Explanation |
 |-----------|-----------------|-------------|
-| Access by index | O(1) | Direct memory calculation |
-| Search (unsorted) | O(n) | Check each element |
-| Search (sorted) | O(log n) | Binary search |
-| Insert at end | O(1) | Amortized for dynamic arrays |
-| Insert at middle | O(n) | Shift elements |
-| Delete at middle | O(n) | Shift elements |
+| **Access** | **O(1)** | Direct calculation via index. |
+| **Search** | **O(n)** | In the worst case, you must check every element. |
+| **Insertion** | **O(n)** | Requires shifting subsequent elements to make space. |
+| **Deletion** | **O(n)** | Requires shifting subsequent elements to fill the gap. |
 
-### Array Basics
+> [!TIP]
+> **Dynamic Arrays**: Languages like Python (`list`), Java (`ArrayList`), and JavaScript (`Array`) use dynamic arrays that resize automatically. Appending to the end is **amortized O(1)**, but resizing (when full) takes **O(n)**.
+
+### Common Operations
 
 ```multi
 [javascript]
-// Creating arrays
+// --- Creation ---
 const arr = [1, 2, 3, 4, 5];
-const zeros = new Array(10).fill(0);
-const matrix = Array.from({ length: 3 }, () => new Array(3).fill(0));
+const zeros = new Array(5).fill(0); // [0, 0, 0, 0, 0]
 
-// Access (O(1))
+// --- Access (O(1)) ---
 const first = arr[0];
 const last = arr[arr.length - 1];
 
-// Modification
+// --- Modification ---
 arr.push(6);           // Add to end - O(1)
-arr.unshift(0);        // Add to front - O(n)
+arr.unshift(0);        // Add to start - O(n) - shifts elements
 arr.pop();             // Remove last - O(1)
-arr.shift();           // Remove first - O(n)
 arr.splice(2, 1);      // Remove at index 2 - O(n)
 
-// Searching
-const idx = arr.indexOf(4);     // Get index
-const exists = arr.includes(4); // Check existence
-const found = arr.find(x => x > 3);  // Find first match
+// --- Traversal ---
+for (let i = 0; i < arr.length; i++) {
+    console.log(arr[i]);
+}
+// Functional approach
+arr.forEach(num => console.log(num));
 
-// Transformations (functional)
-const doubled = arr.map(x => x * 2);
-const evens = arr.filter(x => x % 2 === 0);
-const sum = arr.reduce((acc, x) => acc + x, 0);
-
-// Sorting
-arr.sort((a, b) => a - b);  // Numeric sort
 [python]
-# Creating arrays
+# --- Creation ---
 arr = [1, 2, 3, 4, 5]
-arr = [0] * 10  # [0, 0, 0, ..., 0]
-matrix = [[0] * 3 for _ in range(3)]  # 3x3 matrix
+zeros = [0] * 5  # [0, 0, 0, 0, 0]
 
-# Access (O(1))
+# --- Access (O(1)) ---
 first = arr[0]
-last = arr[-1]
-second_last = arr[-2]
+last = arr[-1]  # Pythonic negative indexing
 
-# Slicing (O(k) where k is slice size)
-sub = arr[1:4]      # [2, 3, 4]
-reversed = arr[::-1]  # [5, 4, 3, 2, 1]
-copy = arr[:]       # Shallow copy
+# --- Modification ---
+arr.append(6)      # Add to end - O(1) amortized
+arr.insert(0, 0)   # Insert at start - O(n)
+arr.pop()          # Remove last - O(1)
+arr.pop(0)         # Remove first - O(n)
 
-# Modification
-arr.append(6)       # Add to end - O(1) amortized
-arr.insert(2, 10)   # Insert at index 2 - O(n)
-arr.pop()           # Remove last - O(1)
-arr.pop(0)          # Remove first - O(n)
-arr.remove(3)       # Remove first occurrence - O(n)
+# --- Slicing (O(k)) ---
+sub = arr[1:4]     # [2, 3, 4]
+rev = arr[::-1]    # Reverse
 
-# Searching
-idx = arr.index(4)  # Get index - O(n)
-exists = 4 in arr   # Check existence - O(n)
-
-# Sorting
-arr.sort()          # In-place sort - O(n log n)
-sorted_arr = sorted(arr)  # Returns new list
-
-# Useful functions
-length = len(arr)
-minimum = min(arr)
-maximum = max(arr)
-total = sum(arr)
 [java]
-// Static array
-int[] arr = {1, 2, 3, 4, 5};
-int[] zeros = new int[10];  // Initialized to 0
-int[][] matrix = new int[3][3];  // 3x3 matrix
+// --- Creation ---
+int[] staticArr = {1, 2, 3, 4, 5}; // Fixed size
+ArrayList<Integer> list = new ArrayList<>(); // Dynamic
 
-// Access (O(1))
-int first = arr[0];
-int last = arr[arr.length - 1];
+// --- Access (O(1)) ---
+int first = staticArr[0];
+// list.get(0);
 
-// Dynamic array (ArrayList)
-ArrayList<Integer> list = new ArrayList<>();
-list.add(1);              // Add to end - O(1)
-list.add(0, 10);          // Insert at index - O(n)
-list.get(0);              // Access - O(1)
-list.remove(0);           // Remove at index - O(n)
-list.size();              // Get length
+// --- Modification ---
+// staticArr cannot be resized
+list.add(6);          // Add to end - O(1)
+list.add(0, 0);       // Insert at start - O(n)
+list.remove(list.size() - 1); // Remove last
 
-// Searching
-int idx = list.indexOf(4);     // Get index
-boolean exists = list.contains(4);  // Check existence
+// --- Traversal ---
+for (int num : staticArr) {
+    System.out.println(num);
+}
 
-// Sorting
-Arrays.sort(arr);              // Sort array
-Collections.sort(list);        // Sort ArrayList
-Arrays.binarySearch(arr, 3);   // Binary search
-
-// Useful methods
-int length = arr.length;
-int max = Arrays.stream(arr).max().getAsInt();
-int sum = Arrays.stream(arr).sum();
 [cpp]
-// Static array
-int arr[] = {1, 2, 3, 4, 5};
-int zeros[10] = {0};  // Initialized to 0
+// --- Creation ---
+int arr[] = {1, 2, 3, 4, 5}; // Static
+vector<int> vec = {1, 2, 3, 4, 5}; // Dynamic
 
-// Dynamic array (vector)
-vector<int> vec = {1, 2, 3, 4, 5};
-vector<int> zeros(10, 0);  // 10 zeros
-vector<vector<int>> matrix(3, vector<int>(3, 0));  // 3x3
-
-// Access (O(1))
+// --- Access (O(1)) ---
 int first = vec[0];
 int last = vec.back();
-int second = vec.at(1);  // With bounds checking
 
-// Modification
-vec.push_back(6);        // Add to end - O(1)
-vec.insert(vec.begin() + 2, 10);  // Insert at index - O(n)
-vec.pop_back();          // Remove last - O(1)
-vec.erase(vec.begin());  // Remove first - O(n)
+// --- Modification ---
+vec.push_back(6);     // Add to end - O(1)
+vec.insert(vec.begin(), 0); // Insert at start - O(n)
+vec.pop_back();       // Remove last - O(1)
 
-// Searching
-auto it = find(vec.begin(), vec.end(), 4);
-bool exists = it != vec.end();
-int idx = distance(vec.begin(), it);
-
-// Sorting
-sort(vec.begin(), vec.end());  // Ascending
-sort(vec.begin(), vec.end(), greater<int>());  // Descending
-
-// Useful functions
-int size = vec.size();
-int maxVal = *max_element(vec.begin(), vec.end());
-int sum = accumulate(vec.begin(), vec.end(), 0);
+// --- Traversal ---
+for (int x : vec) {
+    cout << x << endl;
+}
 ```
 
 ---
 
 ## Strings
 
-Strings are **immutable** in most languages (Python, Java, JavaScript). Every "modification" creates a new string.
+Strings are sequences of characters. In many modern languages (Java, Python, JavaScript), strings are **immutable**, meaning they cannot be changed after creation. Any "modification" actually creates a new string.
 
-### Core Operations
-
-| Operation | Time Complexity |
-|-----------|-----------------|
-| Access character | O(1) |
-| Concatenation | O(n + m) |
-| Substring | O(k) where k is length |
-| Search substring | O(n × m) naive |
-| Compare | O(min(n, m)) |
+> [!WARNING]
+> **Immutability Performance**: Since strings are immutable in Python and Java, repeated concatenation (e.g., in a loop) can be **O(n²)** because a new string is created each time. Use `StringBuilder` (Java) or `list.join` (Python) for **O(n)** performance.
 
 ### String Basics
 
@@ -189,584 +148,110 @@ Strings are **immutable** in most languages (Python, Java, JavaScript). Every "m
 const s = "Hello, World!";
 
 // Access
-const first = s[0];       // 'H'
-const last = s.at(-1);    // '!'
+const char = s[0]; // 'H'
 
-// Methods
-s.toLowerCase();          // "hello, world!"
-s.toUpperCase();          // "HELLO, WORLD!"
-s.trim();                 // Remove whitespace
-s.split(", ");            // ["Hello", "World!"]
-["a", "b"].join(", ");    // "a, b"
+// Common Methods
+const lower = s.toLowerCase();
+const parts = s.split(", "); // ["Hello", "World!"]
+const hasWord = s.includes("World");
 
-// Searching
-s.indexOf("World");       // 7
-s.includes("World");      // true
-s.startsWith("Hello");    // true
-s.endsWith("!");          // true
-
-// Substring
-s.slice(0, 5);            // "Hello"
-s.substring(0, 5);        // "Hello"
-
-// Replace
-s.replace("World", "JS"); // "Hello, JS!"
-s.replaceAll("l", "L");   // "HeLLo, WorLd!"
-
-// Template literals
+// Template Literals
 const name = "Alice";
-const greeting = `Hello, ${name}!`;  // "Hello, Alice!"
+const greeting = `Hello, ${name}!`;
 [python]
 s = "Hello, World!"
 
-# Access (O(1))
-first = s[0]       # 'H'
-last = s[-1]       # '!'
+# Access
+char = s[0] # 'H'
 
-# Slicing
-sub = s[0:5]       # "Hello"
-rev = s[::-1]      # "!dlroW ,olleH"
+# Common Methods
+lower = s.lower()
+parts = s.split(", ") # ["Hello", "World!"]
+has_word = "World" in s
 
-# String methods
-s.lower()          # "hello, world!"
-s.upper()          # "HELLO, WORLD!"
-s.strip()          # Remove whitespace
-s.split(", ")      # ["Hello", "World!"]
-", ".join(["a", "b"])  # "a, b"
-
-# Searching
-idx = s.find("World")     # 7 (or -1 if not found)
-idx = s.index("World")    # 7 (raises error if not found)
-count = s.count("l")      # 3
-exists = "World" in s     # True
-
-# Replace
-new_s = s.replace("World", "Python")  # "Hello, Python!"
-
-# Character checks
-"abc".isalpha()    # True
-"123".isdigit()    # True
-"abc123".isalnum() # True
-
-# Building strings efficiently
-chars = []
-for c in "hello":
-    chars.append(c.upper())
-result = "".join(chars)  # "HELLO"
+# Formatting
+name = "Alice"
+greeting = f"Hello, {name}!"
 [java]
 String s = "Hello, World!";
 
-// Access (O(1))
-char first = s.charAt(0);      // 'H'
-char last = s.charAt(s.length() - 1);  // '!'
+// Access
+char c = s.charAt(0); // 'H'
 
-// Methods
-s.toLowerCase();               // "hello, world!"
-s.toUpperCase();               // "HELLO, WORLD!"
-s.trim();                      // Remove whitespace
-s.split(", ");                 // ["Hello", "World!"]
-String.join(", ", "a", "b");   // "a, b"
+// Common Methods
+String lower = s.toLowerCase();
+String[] parts = s.split(", "); 
+boolean hasWord = s.contains("World");
 
-// Searching
-int idx = s.indexOf("World");  // 7
-boolean contains = s.contains("World");  // true
-boolean starts = s.startsWith("Hello");  // true
-boolean ends = s.endsWith("!");          // true
-
-// Substring
-String sub = s.substring(0, 5);  // "Hello"
-
-// Replace
-String newS = s.replace("World", "Java");  // "Hello, Java!"
-
-// Character checks
-Character.isLetter('a');    // true
-Character.isDigit('1');     // true
-Character.isAlphabetic('a'); // true
-
-// StringBuilder for efficient concatenation
+// StringBuilder (Mutable)
 StringBuilder sb = new StringBuilder();
 sb.append("Hello");
-sb.append(" World");
+sb.append(", ");
+sb.append("World!");
 String result = sb.toString();
 [cpp]
 string s = "Hello, World!";
 
-// Access (O(1))
-char first = s[0];         // 'H'
-char last = s.back();      // '!'
+// Access
+char c = s[0]; // 'H'
 
-// Methods
-transform(s.begin(), s.end(), s.begin(), ::tolower);
-transform(s.begin(), s.end(), s.begin(), ::toupper);
-
-// Substring
-string sub = s.substr(0, 5);  // "Hello"
-
-// Searching
-size_t idx = s.find("World");  // 7
-bool found = idx != string::npos;
-bool starts = s.rfind("Hello", 0) == 0;
-
-// Replace
-s.replace(s.find("World"), 5, "C++");  // "Hello, C++!"
-
-// Character checks
-isalpha('a');    // true
-isdigit('1');    // true
-isalnum('a');    // true
-
-// String stream for building
-stringstream ss;
-ss << "Hello" << " " << "World";
-string result = ss.str();
-
-// Modern C++ string concatenation
-string greeting = "Hello, " + string("World!");
+// Common Methods
+// Modern C++ usually involves standalone functions or methods
+s += " More text"; // Mutable in C++
+size_t pos = s.find("World"); // Returns index or string::npos
+string sub = s.substr(0, 5); // "Hello"
 ```
 
 ---
 
-## Common Patterns
+## Key Algorithmic Patterns
+
+Mastering arrays requires understanding a few key patterns that appear repeatedly in coding interviews.
 
 ### 1. Two Pointers
+Efficient for searching pairs in sorted arrays or reversing structures.
+*   **Time**: O(n)
+*   **Space**: O(1)
 
-```multi
-[javascript]
-// Reverse a string in-place
-function reverseString(s) {
-    const chars = s.split('');
-    let left = 0, right = chars.length - 1;
-    
-    while (left < right) {
-        [chars[left], chars[right]] = [chars[right], chars[left]];
-        left++;
-        right--;
-    }
-    
-    return chars.join('');
-}
+> **Use Case**: Checking palindromes, reversing arrays, finding pairs in sorted arrays.
 
-// Check if palindrome
-function isPalindrome(s) {
-    let left = 0, right = s.length - 1;
-    
-    while (left < right) {
-        if (s[left] !== s[right]) return false;
-        left++;
-        right--;
-    }
-    
-    return true;
-}
-[python]
-# Reverse a string in-place
-def reverse_string(s):
-    chars = list(s)
-    left, right = 0, len(chars) - 1
-    
-    while left < right:
-        chars[left], chars[right] = chars[right], chars[left]
-        left += 1
-        right -= 1
-    
-    return "".join(chars)
-
-# Check if palindrome
-def is_palindrome(s):
-    left, right = 0, len(s) - 1
-    
-    while left < right:
-        if s[left] != s[right]:
-            return False
-        left += 1
-        right -= 1
-    
-    return True
-[java]
-// Reverse a string in-place
-public static String reverseString(String s) {
-    char[] chars = s.toCharArray();
-    int left = 0, right = chars.length - 1;
-    
-    while (left < right) {
-        char temp = chars[left];
-        chars[left] = chars[right];
-        chars[right] = temp;
-        left++;
-        right--;
-    }
-    
-    return new String(chars);
-}
-
-// Check if palindrome
-public static boolean isPalindrome(String s) {
-    int left = 0, right = s.length() - 1;
-    
-    while (left < right) {
-        if (s.charAt(left) != s.charAt(right)) return false;
-        left++;
-        right--;
-    }
-    
-    return true;
-}
-[cpp]
-// Reverse a string in-place
-string reverseString(string s) {
-    int left = 0, right = s.length() - 1;
-    
-    while (left < right) {
-        swap(s[left], s[right]);
-        left++;
-        right--;
-    }
-    
-    return s;
-}
-
-// Check if palindrome
-bool isPalindrome(string s) {
-    int left = 0, right = s.length() - 1;
-    
-    while (left < right) {
-        if (s[left] != s[right]) return false;
-        left++;
-        right--;
-    }
-    
-    return true;
+```javascript
+// Example: Reverse Array
+function reverse(arr) {
+  let left = 0, right = arr.length - 1;
+  while (left < right) {
+    [arr[left], arr[right]] = [arr[right], arr[left]]; // Swap
+    left++;
+    right--;
+  }
 }
 ```
 
 ### 2. Sliding Window
+Used to perform operations on a specific window size of the array or find a subarray meeting certain criteria.
+*   **Time**: O(n)
+*   **Space**: O(1)
 
-```multi
-[javascript]
-// Maximum sum of k consecutive elements
-function maxSumSubarray(arr, k) {
-    if (arr.length < k) return null;
-    
-    // Calculate first window
-    let windowSum = arr.slice(0, k).reduce((a, b) => a + b, 0);
-    let maxSum = windowSum;
-    
-    // Slide the window
-    for (let i = k; i < arr.length; i++) {
-        windowSum = windowSum - arr[i - k] + arr[i];
-        maxSum = Math.max(maxSum, windowSum);
-    }
-    
-    return maxSum;
-}
-
-// Longest substring without repeating chars
-function lengthOfLongestSubstring(s) {
-    const charSet = new Set();
-    let left = 0, maxLen = 0;
-    
-    for (let right = 0; right < s.length; right++) {
-        while (charSet.has(s[right])) {
-            charSet.delete(s[left]);
-            left++;
-        }
-        charSet.add(s[right]);
-        maxLen = Math.max(maxLen, right - left + 1);
-    }
-    
-    return maxLen;
-}
-[python]
-# Maximum sum of k consecutive elements
-def max_sum_subarray(arr, k):
-    if len(arr) < k:
-        return None
-    
-    # Calculate first window
-    window_sum = sum(arr[:k])
-    max_sum = window_sum
-    
-    # Slide the window
-    for i in range(k, len(arr)):
-        window_sum = window_sum - arr[i - k] + arr[i]
-        max_sum = max(max_sum, window_sum)
-    
-    return max_sum
-
-# Longest substring without repeating chars
-def length_of_longest_substring(s):
-    char_set = set()
-    left = 0
-    max_len = 0
-    
-    for right in range(len(s)):
-        while s[right] in char_set:
-            char_set.remove(s[left])
-            left += 1
-        
-        char_set.add(s[right])
-        max_len = max(max_len, right - left + 1)
-    
-    return max_len
-[java]
-// Maximum sum of k consecutive elements
-public static int maxSumSubarray(int[] arr, int k) {
-    if (arr.length < k) return -1;
-    
-    // Calculate first window
-    int windowSum = 0;
-    for (int i = 0; i < k; i++) {
-        windowSum += arr[i];
-    }
-    int maxSum = windowSum;
-    
-    // Slide the window
-    for (int i = k; i < arr.length; i++) {
-        windowSum = windowSum - arr[i - k] + arr[i];
-        maxSum = Math.max(maxSum, windowSum);
-    }
-    
-    return maxSum;
-}
-
-// Longest substring without repeating chars
-public static int lengthOfLongestSubstring(String s) {
-    Set<Character> charSet = new HashSet<>();
-    int left = 0, maxLen = 0;
-    
-    for (int right = 0; right < s.length(); right++) {
-        while (charSet.contains(s.charAt(right))) {
-            charSet.remove(s.charAt(left));
-            left++;
-        }
-        charSet.add(s.charAt(right));
-        maxLen = Math.max(maxLen, right - left + 1);
-    }
-    
-    return maxLen;
-}
-[cpp]
-// Maximum sum of k consecutive elements
-int maxSumSubarray(vector<int>& arr, int k) {
-    if (arr.size() < k) return -1;
-    
-    // Calculate first window
-    int windowSum = 0;
-    for (int i = 0; i < k; i++) {
-        windowSum += arr[i];
-    }
-    int maxSum = windowSum;
-    
-    // Slide the window
-    for (int i = k; i < arr.size(); i++) {
-        windowSum = windowSum - arr[i - k] + arr[i];
-        maxSum = max(maxSum, windowSum);
-    }
-    
-    return maxSum;
-}
-
-// Longest substring without repeating chars
-int lengthOfLongestSubstring(string s) {
-    unordered_set<char> charSet;
-    int left = 0, maxLen = 0;
-    
-    for (int right = 0; right < s.length(); right++) {
-        while (charSet.count(s[right])) {
-            charSet.erase(s[left]);
-            left++;
-        }
-        charSet.insert(s[right]);
-        maxLen = max(maxLen, right - left + 1);
-    }
-    
-    return maxLen;
-}
-```
+> **Use Case**: Maximum sum of `k` consecutive elements, longest substring with distinct characters.
 
 ### 3. Prefix Sum
+Pre-computation technique to allow O(1) range sum queries.
+*   **Time**: O(n) to build, O(1) per query
+*   **Space**: O(n)
 
-```multi
-[javascript]
-// Build prefix sum array
-function buildPrefixSum(arr) {
-    const prefix = [0];
-    for (let i = 0; i < arr.length; i++) {
-        prefix.push(prefix[i] + arr[i]);
-    }
-    return prefix;
-}
-
-// Get range sum O(1)
-function rangeSum(prefix, left, right) {
-    return prefix[right + 1] - prefix[left];
-}
-
-// Usage
-const arr = [1, 2, 3, 4, 5];
-const prefix = buildPrefixSum(arr);
-console.log(rangeSum(prefix, 1, 3));  // 2 + 3 + 4 = 9
-[python]
-# Build prefix sum array
-def build_prefix_sum(arr):
-    prefix = [0] * (len(arr) + 1)
-    for i in range(len(arr)):
-        prefix[i + 1] = prefix[i] + arr[i]
-    return prefix
-
-# Get range sum O(1)
-def range_sum(prefix, left, right):
-    return prefix[right + 1] - prefix[left]
-
-# Usage
-arr = [1, 2, 3, 4, 5]
-prefix = build_prefix_sum(arr)
-print(range_sum(prefix, 1, 3))  # 2 + 3 + 4 = 9
-[java]
-// Build prefix sum array
-public static int[] buildPrefixSum(int[] arr) {
-    int[] prefix = new int[arr.length + 1];
-    for (int i = 0; i < arr.length; i++) {
-        prefix[i + 1] = prefix[i] + arr[i];
-    }
-    return prefix;
-}
-
-// Get range sum O(1)
-public static int rangeSum(int[] prefix, int left, int right) {
-    return prefix[right + 1] - prefix[left];
-}
-
-// Usage
-int[] arr = {1, 2, 3, 4, 5};
-int[] prefix = buildPrefixSum(arr);
-System.out.println(rangeSum(prefix, 1, 3));  // 9
-[cpp]
-// Build prefix sum array
-vector<int> buildPrefixSum(vector<int>& arr) {
-    vector<int> prefix(arr.size() + 1, 0);
-    for (int i = 0; i < arr.size(); i++) {
-        prefix[i + 1] = prefix[i] + arr[i];
-    }
-    return prefix;
-}
-
-// Get range sum O(1)
-int rangeSum(vector<int>& prefix, int left, int right) {
-    return prefix[right + 1] - prefix[left];
-}
-
-// Usage
-vector<int> arr = {1, 2, 3, 4, 5};
-vector<int> prefix = buildPrefixSum(arr);
-cout << rangeSum(prefix, 1, 3);  // 9
-```
-
-### 4. Hash Map for Counting
-
-```multi
-[javascript]
-// Count character frequencies
-const counter = {};
-for (const c of "aabbbcccc") {
-    counter[c] = (counter[c] || 0) + 1;
-}
-// { a: 2, b: 3, c: 4 }
-
-// Two Sum pattern
-function twoSum(nums, target) {
-    const seen = new Map();
-    for (let i = 0; i < nums.length; i++) {
-        const complement = target - nums[i];
-        if (seen.has(complement)) {
-            return [seen.get(complement), i];
-        }
-        seen.set(nums[i], i);
-    }
-    return [];
-}
-[python]
-from collections import Counter
-
-# Count character frequencies
-s = "aabbbcccc"
-counter = Counter(s)  # {'c': 4, 'b': 3, 'a': 2}
-
-# Two Sum pattern
-def two_sum(nums, target):
-    seen = {}
-    for i, num in enumerate(nums):
-        complement = target - num
-        if complement in seen:
-            return [seen[complement], i]
-        seen[num] = i
-    return []
-[java]
-// Count character frequencies
-Map<Character, Integer> counter = new HashMap<>();
-for (char c : "aabbbcccc".toCharArray()) {
-    counter.put(c, counter.getOrDefault(c, 0) + 1);
-}
-// {a=2, b=3, c=4}
-
-// Two Sum pattern
-public static int[] twoSum(int[] nums, int target) {
-    Map<Integer, Integer> seen = new HashMap<>();
-    for (int i = 0; i < nums.length; i++) {
-        int complement = target - nums[i];
-        if (seen.containsKey(complement)) {
-            return new int[] {seen.get(complement), i};
-        }
-        seen.put(nums[i], i);
-    }
-    return new int[] {};
-}
-[cpp]
-// Count character frequencies
-unordered_map<char, int> counter;
-for (char c : "aabbbcccc"s) {
-    counter[c]++;
-}
-// {a: 2, b: 3, c: 4}
-
-// Two Sum pattern
-vector<int> twoSum(vector<int>& nums, int target) {
-    unordered_map<int, int> seen;
-    for (int i = 0; i < nums.size(); i++) {
-        int complement = target - nums[i];
-        if (seen.count(complement)) {
-            return {seen[complement], i};
-        }
-        seen[nums[i]] = i;
-    }
-    return {};
-}
-```
+> **Use Case**: "Sum of elements between index `i` and `j`?"
 
 ---
 
-## Classic Interview Problems
+## Essential Practice Questions
 
-| Problem | Pattern | Time |
-|---------|---------|------|
-| Two Sum | Hash Map | O(n) |
-| Valid Anagram | Counting | O(n) |
-| Reverse String | Two Pointers | O(n) |
-| Is Palindrome | Two Pointers | O(n) |
-| Max Subarray | Kadane's | O(n) |
-| Merge Sorted Arrays | Two Pointers | O(n + m) |
-| Longest Substring No Repeat | Sliding Window | O(n) |
-| Rotate Array | Reverse | O(n) |
-| Product Except Self | Prefix/Suffix | O(n) |
+| Difficulty | Problem | Concept |
+|:---:|---|---|
+| 🟢 | **Two Sum** | Hash Map / Two Pointers |
+| 🟢 | **Valid Anagram** | Frequency Counter |
+| 🟡 | **Longest Substring Without Repeating Characters** | Sliding Window |
+| 🟡 | **Product of Array Except Self** | Prefix/Suffix Array |
+| 🔴 | **Sliding Window Maximum** | Monotonic Deque |
 
----
-
-## Key Takeaways
-
-1. **Arrays** = Contiguous memory, O(1) access
-2. **Strings** = Immutable in most languages
-3. **Two Pointers** = Efficient for sorted/symmetric problems
-4. **Sliding Window** = Subarray/substring problems
-5. **Hash Map** = O(1) lookup for counting/pairing
-6. **Prefix Sum** = O(1) range queries after O(n) preprocessing
+> [!IMPORTANT]
+> Start with the **Two Sum** problem in the practice section to verify your understanding of using Hash Maps with Arrays.
