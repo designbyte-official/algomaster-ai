@@ -151,6 +151,7 @@ try {
     "segment-tree": VisualizerType.BINARY_TREE, // Reuse Tree visualizer
     "fenwick-tree": VisualizerType.BINARY_TREE, // Reuse Tree visualizer
     "arrays-strings": VisualizerType.GRID, // Array operations visualization
+    recursion: VisualizerType.STACK, // Visualize recursion with call stack
   }
 
   TOPICS.forEach((topic) => {

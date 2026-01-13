@@ -53,6 +53,8 @@ import {
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
 
 interface CodePlaygroundProps {
   topic?: Topic
@@ -805,23 +807,73 @@ export function CodePlayground({
                 </div>
               )}
 
-              <div className="flex-1 overflow-auto p-5 font-mono text-sm">
-                {output ? (
-                  <pre
-                    className={cn(
-                      "leading-relaxed whitespace-pre-wrap",
-                      status === "error" ? "text-red-400" : "text-zinc-300"
-                    )}
-                  >
-                    {output}
-                  </pre>
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center space-y-2 text-zinc-600 opacity-50">
-                    <IconWrapper icon={PlayIcon} size={32} />
-                    <span className="text-xs">Run code to see output</span>
-                    <span className="text-[10px] text-zinc-700">Ctrl+Enter to run</span>
+              <div className="flex-1 overflow-auto p-0 font-mono text-sm">
+                <Tabs defaultValue="output" className="h-full flex flex-col">
+                  <div className="px-4 border-b border-white/5 bg-white/5 flex items-center justify-between">
+                    <TabsList className="bg-transparent h-10 border-none p-0">
+                      <TabsTrigger 
+                        value="output" 
+                        className="data-[state=active]:bg-transparent data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none h-10 px-4 text-[11px] font-bold uppercase tracking-wider"
+                      >
+                        Output
+                      </TabsTrigger>
+                      {topic?.practiceProblems?.[0]?.testCases && (
+                        <TabsTrigger 
+                          value="tests" 
+                          className="data-[state=active]:bg-transparent data-[state=active]:text-primary border-b-2 border-transparent data-[state=active]:border-primary rounded-none h-10 px-4 text-[11px] font-bold uppercase tracking-wider"
+                        >
+                          Test Cases
+                        </TabsTrigger>
+                      )}
+                    </TabsList>
                   </div>
-                )}
+
+                  <TabsContent value="output" className="flex-1 m-0 p-5 overflow-auto custom-scrollbar">
+                    {output ? (
+                      <pre
+                        className={cn(
+                          "leading-relaxed whitespace-pre-wrap",
+                          status === "error" ? "text-red-400" : "text-zinc-300"
+                        )}
+                      >
+                        {output}
+                      </pre>
+                    ) : (
+                      <div className="flex h-full flex-col items-center justify-center space-y-2 text-zinc-600 opacity-50">
+                        <IconWrapper icon={PlayIcon} size={32} />
+                        <span className="text-xs">Run code to see output</span>
+                        <span className="text-[10px] text-zinc-700">Ctrl+Enter to run</span>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  {topic?.practiceProblems?.[0]?.testCases && (
+                    <TabsContent value="tests" className="flex-1 m-0 p-4 overflow-auto custom-scrollbar">
+                      <div className="space-y-4">
+                        {topic.practiceProblems[0].testCases.map((tc: { input: any; expectedOutput: any; explanation?: string }, idx: number) => (
+                           <div key={idx} className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase">Test Case {idx + 1}</span>
+                                <Badge variant="outline" className="text-[10px] bg-zinc-800 text-zinc-400 border-zinc-700">
+                                  Not Run
+                                </Badge>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-[10px] text-zinc-500 uppercase mb-1">Input</p>
+                                  <pre className="bg-black/20 p-2 rounded text-xs text-zinc-300">{JSON.stringify(tc.input, null, 2)}</pre>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] text-zinc-500 uppercase mb-1">Expected</p>
+                                  <pre className="bg-black/20 p-2 rounded text-xs text-zinc-300">{JSON.stringify(tc.expectedOutput, null, 2)}</pre>
+                                </div>
+                              </div>
+                           </div>
+                        ))}
+                      </div>
+                    </TabsContent>
+                  )}
+                </Tabs>
               </div>
             </div>
           </ResizablePanel>

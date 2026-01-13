@@ -1,192 +1,163 @@
 # Queue
 
-A **Queue** is a linear data structure that follows the **First-In, First-Out (FIFO)** principle. Think of a line at a coffee shop: first person in line is served first.
+> [!NOTE]
+> **Core Concept**: A **Queue** is a linear data structure that follows the **FIFO** (First-In, First-Out) principle. Think of a line at a coffee shop: the first person to join the line is the first one served.
+
+Queues are essential for managing resources where fairness or order matters, such as printer jobs, CPU task scheduling, or breadth-first search in graphs.
+
+---
 
 ## Visual Representation
 
-```
-    Enqueue (add)                     Dequeue (remove)
-         ↓                                  ↓
-┌────┬────┬────┬────┬────┐
-│ 50 │ 40 │ 30 │ 20 │ 10 │
-└────┴────┴────┴────┴────┘
-  ↑                    ↑
- Rear               Front
- (Back)             (Front)
-
-Enqueue(60):                    Dequeue():
-┌────┬────┬────┬────┬────┬────┐    ┌────┬────┬────┬────┐
-│ 60 │ 50 │ 40 │ 30 │ 20 │ 10 │    │ 50 │ 40 │ 30 │ 20 │
-└────┴────┴────┴────┴────┴────┘    └────┴────┴────┴────┘
-                                   Returns: 10
+```mermaid
+graph LR
+    subgraph QUEUE [Queue Operations]
+        direction LR
+        IN[Enqueue(60): Add to Rear] -.-> E
+        A[10] --> B[20]
+        B --> C[30]
+        C --> D[40]
+        D --> E[50]
+        A -.-> OUT[Dequeue(): Remove Front]
+    end
+    
+    style A fill:#e0f7fa,stroke:#006064
+    style B fill:#e0f7fa,stroke:#006064
+    style C fill:#e0f7fa,stroke:#006064
+    style D fill:#e0f7fa,stroke:#006064
+    style E fill:#e0f7fa,stroke:#006064
 ```
 
 ---
 
 ## Core Operations
 
-| Operation | Description | Time |
-|-----------|-------------|------|
-| `enqueue(x)` | Add element to rear | O(1) |
-| `dequeue()` | Remove element from front | O(1) |
-| `front()` / `peek()` | View front element | O(1) |
-| `isEmpty()` | Check if queue is empty | O(1) |
-| `size()` | Get number of elements | O(1) |
+| Operation | Description | Time Complexity |
+|-----------|-------------|-----------------|
+| `enqueue(x)` | Add element `x` to the rear | **O(1)** |
+| `dequeue()` | Remove and return the front element | **O(1)** |
+| `front()` | View the front element without removing it | **O(1)** |
+| `isEmpty()` | Check if the queue is empty | **O(1)** |
+
+> [!WARNING]
+> **Performance Pitfall**: In JavaScript (and Python lists), using `shift()` or `pop(0)` to dequeue is **O(n)** because all subsequent elements must be shifted. For true **O(1)** performance, use a **Doubly Linked List** or a dedicated **Deque** class.
 
 ---
 
 ## Implementation
 
+### Optimized Queue (using Object/Map)
+
 ```multi
 [javascript]
 class Queue {
     constructor() {
-        this.items = [];
+        this.items = {};
         this.frontIndex = 0;
+        this.rearIndex = 0;
     }
     
+    // O(1)
     enqueue(item) {
-        this.items.push(item);
+        this.items[this.rearIndex] = item;
+        this.rearIndex++;
     }
     
+    // O(1) - No shifting required
     dequeue() {
-        if (this.isEmpty()) {
-            throw new Error("Queue is empty");
-        }
+        if (this.isEmpty()) return null;
+        
         const item = this.items[this.frontIndex];
+        delete this.items[this.frontIndex];
         this.frontIndex++;
         
-        // Clean up when half the array is empty
-        if (this.frontIndex > this.items.length / 2) {
-            this.items = this.items.slice(this.frontIndex);
+        // Reset indices if empty to prevent integer overflow (in theory)
+        if (this.isEmpty()) {
             this.frontIndex = 0;
+            this.rearIndex = 0;
         }
+        
         return item;
     }
     
+    // O(1)
     front() {
-        if (this.isEmpty()) {
-            throw new Error("Queue is empty");
-        }
+        if (this.isEmpty()) return null;
         return this.items[this.frontIndex];
     }
     
     isEmpty() {
-        return this.frontIndex >= this.items.length;
+        return this.rearIndex === this.frontIndex;
     }
     
     size() {
-        return this.items.length - this.frontIndex;
+        return this.rearIndex - this.frontIndex;
     }
 }
-
-// Usage
-const queue = new Queue();
-queue.enqueue(1);
-queue.enqueue(2);
-queue.enqueue(3);
-console.log(queue.front());    // 1
-console.log(queue.dequeue());  // 1
-console.log(queue.size());     // 2
-
 [python]
 from collections import deque
 
 class Queue:
     def __init__(self):
+        # Python's deque is implemented as a doubly linked list
         self.items = deque()
     
     def enqueue(self, item):
-        """Add item to rear - O(1)"""
+        """Add to right - O(1)"""
         self.items.append(item)
     
     def dequeue(self):
-        """Remove and return front item - O(1)"""
+        """Remove from left - O(1)"""
         if self.is_empty():
             raise IndexError("Dequeue from empty queue")
         return self.items.popleft()
     
     def front(self):
-        """Return front item without removing - O(1)"""
         if self.is_empty():
-            raise IndexError("Front from empty queue")
+            raise IndexError("Queue is empty")
         return self.items[0]
     
     def is_empty(self):
-        """Check if queue is empty - O(1)"""
         return len(self.items) == 0
-    
+        
     def size(self):
-        """Return number of items - O(1)"""
         return len(self.items)
-    
-    def __str__(self):
-        return f"Queue({list(self.items)})"
-
-# Usage
-q = Queue()
-q.enqueue(1)
-q.enqueue(2)
-q.enqueue(3)
-print(q.front())    # 1
-print(q.dequeue())  # 1
-print(q.size())     # 2
-
-# Using deque directly (recommended)
-queue = deque()
-queue.append(1)     # enqueue
-queue.popleft()     # dequeue
-
 [java]
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.ArrayDeque;
 
 public class QueueExample {
     public static void main(String[] args) {
-        // Using built-in Queue interface with LinkedList
+        // LinkedList implements Queue interface
         Queue<Integer> queue = new LinkedList<>();
-        queue.offer(1);      // enqueue (returns false if fails)
-        queue.add(2);        // enqueue (throws exception if fails)
-        queue.offer(3);
         
-        System.out.println(queue.peek());     // front: 1
-        System.out.println(queue.poll());     // dequeue: 1
-        System.out.println(queue.isEmpty());  // false
-        System.out.println(queue.size());     // 2
+        // Add (Enqueue)
+        queue.offer(1); // Safer than add()
+        queue.offer(2);
         
-        // ArrayDeque (faster than LinkedList)
-        Queue<Integer> fastQueue = new ArrayDeque<>();
-        fastQueue.offer(10);
-        fastQueue.offer(20);
-        System.out.println(fastQueue.poll()); // 10
+        // Remove (Dequeue)
+        System.out.println(queue.poll()); // 1, or null if empty
+        
+        // Peek (Front)
+        System.out.println(queue.peek()); // 2, or null if empty
     }
 }
-
 [cpp]
-#include <iostream>
 #include <queue>
+#include <iostream>
 
 int main() {
-    // Using STL queue
     std::queue<int> q;
     
-    // Enqueue elements
+    // Enqueue
     q.push(1);
     q.push(2);
-    q.push(3);
     
-    // Peek front and back
-    std::cout << "Front: " << q.front() << std::endl;  // 1
-    std::cout << "Back: " << q.back() << std::endl;    // 3
+    // Front
+    std::cout << q.front() << std::endl; // 1
     
     // Dequeue
-    q.pop();  // removes 1 (doesn't return value)
-    std::cout << "After pop, front: " << q.front() << std::endl;  // 2
-    
-    // Check size and empty
-    std::cout << "Size: " << q.size() << std::endl;    // 2
-    std::cout << "Empty: " << q.empty() << std::endl;  // 0 (false)
+    q.pop(); // Void return type
     
     return 0;
 }
@@ -196,991 +167,63 @@ int main() {
 
 ## Types of Queues
 
-### 1. Simple Queue (Linear Queue)
+### 1. Circular Queue (Ring Buffer)
+Uses a fixed-size array and wraps around indices. Efficient for buffering data streams.
 
-Standard FIFO queue as described above.
+### 2. Priority Queue
+Elements are dequeued based on **priority** rather than insertion order.
+*   **Implementation**: Binary Heap
+*   **Enqueue**: O(log n)
+*   **Dequeue**: O(log n)
 
-### 2. Circular Queue
-
-```multi
-[javascript]
-class CircularQueue {
-    constructor(capacity) {
-        this.capacity = capacity;
-        this.queue = new Array(capacity).fill(null);
-        this.front = 0;
-        this.rear = -1;
-        this.size = 0;
-    }
-    
-    enqueue(item) {
-        if (this.isFull()) {
-            throw new Error("Queue is full");
-        }
-        this.rear = (this.rear + 1) % this.capacity;
-        this.queue[this.rear] = item;
-        this.size++;
-    }
-    
-    dequeue() {
-        if (this.isEmpty()) {
-            throw new Error("Queue is empty");
-        }
-        const item = this.queue[this.front];
-        this.front = (this.front + 1) % this.capacity;
-        this.size--;
-        return item;
-    }
-    
-    isEmpty() {
-        return this.size === 0;
-    }
-    
-    isFull() {
-        return this.size === this.capacity;
-    }
-}
-
-[python]
-class CircularQueue:
-    def __init__(self, capacity):
-        self.capacity = capacity
-        self.queue = [None] * capacity
-        self.front = 0
-        self.rear = -1
-        self.size = 0
-    
-    def enqueue(self, item):
-        if self.is_full():
-            raise IndexError("Queue is full")
-        self.rear = (self.rear + 1) % self.capacity
-        self.queue[self.rear] = item
-        self.size += 1
-    
-    def dequeue(self):
-        if self.is_empty():
-            raise IndexError("Queue is empty")
-        item = self.queue[self.front]
-        self.front = (self.front + 1) % self.capacity
-        self.size -= 1
-        return item
-    
-    def is_empty(self):
-        return self.size == 0
-    
-    def is_full(self):
-        return self.size == self.capacity
-
-[java]
-public class CircularQueue {
-    private int[] queue;
-    private int front, rear, size, capacity;
-    
-    public CircularQueue(int capacity) {
-        this.capacity = capacity;
-        this.queue = new int[capacity];
-        this.front = 0;
-        this.rear = -1;
-        this.size = 0;
-    }
-    
-    public void enqueue(int item) {
-        if (isFull()) {
-            throw new RuntimeException("Queue is full");
-        }
-        rear = (rear + 1) % capacity;
-        queue[rear] = item;
-        size++;
-    }
-    
-    public int dequeue() {
-        if (isEmpty()) {
-            throw new RuntimeException("Queue is empty");
-        }
-        int item = queue[front];
-        front = (front + 1) % capacity;
-        size--;
-        return item;
-    }
-    
-    public boolean isEmpty() { return size == 0; }
-    public boolean isFull() { return size == capacity; }
-}
-
-[cpp]
-#include <vector>
-#include <stdexcept>
-
-class CircularQueue {
-private:
-    std::vector<int> queue;
-    int front, rear, size, capacity;
-    
-public:
-    CircularQueue(int cap) : capacity(cap), front(0), rear(-1), size(0) {
-        queue.resize(capacity);
-    }
-    
-    void enqueue(int item) {
-        if (isFull()) {
-            throw std::runtime_error("Queue is full");
-        }
-        rear = (rear + 1) % capacity;
-        queue[rear] = item;
-        size++;
-    }
-    
-    int dequeue() {
-        if (isEmpty()) {
-            throw std::runtime_error("Queue is empty");
-        }
-        int item = queue[front];
-        front = (front + 1) % capacity;
-        size--;
-        return item;
-    }
-    
-    bool isEmpty() { return size == 0; }
-    bool isFull() { return size == capacity; }
-};
-```
-
-### 3. Priority Queue
-
-Elements are dequeued by priority, not order.
-
-```multi
-[javascript]
-// Using array-based min heap
-class PriorityQueue {
-    constructor() {
-        this.heap = [];
-    }
-    
-    push(val) {
-        this.heap.push(val);
-        this.bubbleUp(this.heap.length - 1);
-    }
-    
-    pop() {
-        if (this.heap.length === 0) return undefined;
-        const min = this.heap[0];
-        const last = this.heap.pop();
-        if (this.heap.length > 0) {
-            this.heap[0] = last;
-            this.bubbleDown(0);
-        }
-        return min;
-    }
-    
-    bubbleUp(idx) {
-        while (idx > 0) {
-            const parent = Math.floor((idx - 1) / 2);
-            if (this.heap[parent] <= this.heap[idx]) break;
-            [this.heap[parent], this.heap[idx]] = [this.heap[idx], this.heap[parent]];
-            idx = parent;
-        }
-    }
-    
-    bubbleDown(idx) {
-        while (true) {
-            const left = 2 * idx + 1;
-            const right = 2 * idx + 2;
-            let smallest = idx;
-            
-            if (left < this.heap.length && this.heap[left] < this.heap[smallest]) {
-                smallest = left;
-            }
-            if (right < this.heap.length && this.heap[right] < this.heap[smallest]) {
-                smallest = right;
-            }
-            if (smallest === idx) break;
-            
-            [this.heap[idx], this.heap[smallest]] = [this.heap[smallest], this.heap[idx]];
-            idx = smallest;
-        }
-    }
-}
-
-// Usage
-const pq = new PriorityQueue();
-pq.push(3);
-pq.push(1);
-pq.push(2);
-console.log(pq.pop());  // 1 (smallest)
-
-[python]
-import heapq
-
-# Min-heap (smallest first)
-pq = []
-heapq.heappush(pq, 3)
-heapq.heappush(pq, 1)
-heapq.heappush(pq, 2)
-print(heapq.heappop(pq))  # 1 (smallest)
-
-# Max-heap (use negative values)
-max_pq = []
-heapq.heappush(max_pq, -3)
-heapq.heappush(max_pq, -1)
-heapq.heappush(max_pq, -2)
-print(-heapq.heappop(max_pq))  # 3 (largest)
-
-# Priority queue with custom priority
-import heapq
-
-class PriorityQueue:
-    def __init__(self):
-        self.heap = []
-        self.counter = 0
-    
-    def push(self, item, priority):
-        heapq.heappush(self.heap, (priority, self.counter, item))
-        self.counter += 1
-    
-    def pop(self):
-        return heapq.heappop(self.heap)[2]
-
-[java]
-import java.util.PriorityQueue;
-import java.util.Comparator;
-
-public class PriorityQueueExample {
-    public static void main(String[] args) {
-        // Min-heap (default)
-        PriorityQueue<Integer> minHeap = new PriorityQueue<>();
-        minHeap.offer(3);
-        minHeap.offer(1);
-        minHeap.offer(2);
-        System.out.println(minHeap.poll());  // 1 (smallest)
-        
-        // Max-heap
-        PriorityQueue<Integer> maxHeap = new PriorityQueue<>(
-            Comparator.reverseOrder()
-        );
-        maxHeap.offer(3);
-        maxHeap.offer(1);
-        maxHeap.offer(2);
-        System.out.println(maxHeap.poll());  // 3 (largest)
-        
-        // Custom priority (by string length)
-        PriorityQueue<String> customPQ = new PriorityQueue<>(
-            (a, b) -> a.length() - b.length()
-        );
-        customPQ.offer("hello");
-        customPQ.offer("hi");
-        customPQ.offer("hey");
-        System.out.println(customPQ.poll());  // "hi" (shortest)
-    }
-}
-
-[cpp]
-#include <iostream>
-#include <queue>
-#include <vector>
-#include <functional>
-
-int main() {
-    // Min-heap
-    std::priority_queue<int, std::vector<int>, std::greater<int>> minHeap;
-    minHeap.push(3);
-    minHeap.push(1);
-    minHeap.push(2);
-    std::cout << minHeap.top() << std::endl;  // 1 (smallest)
-    minHeap.pop();
-    
-    // Max-heap (default)
-    std::priority_queue<int> maxHeap;
-    maxHeap.push(3);
-    maxHeap.push(1);
-    maxHeap.push(2);
-    std::cout << maxHeap.top() << std::endl;  // 3 (largest)
-    maxHeap.pop();
-    
-    return 0;
-}
-```
-
-### 4. Double-Ended Queue (Deque)
-
-Add/remove from both ends.
-
-```multi
-[javascript]
-// JavaScript doesn't have a built-in deque, but arrays work for small data
-const deque = [];
-deque.push(1);       // Add to right
-deque.unshift(0);    // Add to left (O(n) - not ideal)
-deque.pop();         // Remove from right
-deque.shift();       // Remove from left (O(n) - not ideal)
-
-// For O(1) operations, use a custom implementation or a library
-
-[python]
-from collections import deque
-
-dq = deque()
-dq.append(1)       # Add to right
-dq.appendleft(0)   # Add to left
-dq.pop()           # Remove from right
-dq.popleft()       # Remove from left
-
-# With maxlen for fixed size
-bounded = deque(maxlen=3)
-bounded.append(1)
-bounded.append(2)
-bounded.append(3)
-bounded.append(4)  # 1 is automatically removed
-print(list(bounded))  # [2, 3, 4]
-
-[java]
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-public class DequeExample {
-    public static void main(String[] args) {
-        Deque<Integer> deque = new ArrayDeque<>();
-        
-        deque.addFirst(1);   // Add to front
-        deque.addLast(2);    // Add to back
-        deque.offerFirst(0); // Add to front (returns false if fails)
-        deque.offerLast(3);  // Add to back
-        
-        System.out.println(deque.pollFirst());  // Remove from front: 0
-        System.out.println(deque.pollLast());   // Remove from back: 3
-        System.out.println(deque.peekFirst());  // View front: 1
-        System.out.println(deque.peekLast());   // View back: 2
-    }
-}
-
-[cpp]
-#include <iostream>
-#include <deque>
-
-int main() {
-    std::deque<int> dq;
-    
-    dq.push_back(1);   // Add to back
-    dq.push_front(0);  // Add to front
-    dq.push_back(2);
-    
-    std::cout << dq.front() << std::endl;  // 0
-    std::cout << dq.back() << std::endl;   // 2
-    
-    dq.pop_front();  // Remove from front
-    dq.pop_back();   // Remove from back
-    
-    std::cout << dq.front() << std::endl;  // 1
-    
-    return 0;
-}
-```
+### 3. Deque (Double-Ended Queue)
+Allows insertion and removal from **both** ends.
 
 ---
 
-## Common Problems & Solutions
+## Common Algorithmic Patterns
 
-### 1. Implement Queue using Stacks
+### 1. Moving Average from Data Stream
+Calculate the average of the last `k` elements.
 
-```multi
-[javascript]
-class MyQueue {
-    constructor() {
-        this.stackIn = [];   // For enqueue
-        this.stackOut = [];  // For dequeue
+```javascript
+class MovingAverage {
+    constructor(size) {
+        this.size = size;
+        this.queue = [];
+        this.sum = 0;
     }
     
-    push(x) {
-        this.stackIn.push(x);
-    }
-    
-    pop() {
-        this.transfer();
-        return this.stackOut.pop();
-    }
-    
-    peek() {
-        this.transfer();
-        return this.stackOut[this.stackOut.length - 1];
-    }
-    
-    empty() {
-        return this.stackIn.length === 0 && this.stackOut.length === 0;
-    }
-    
-    transfer() {
-        if (this.stackOut.length === 0) {
-            while (this.stackIn.length > 0) {
-                this.stackOut.push(this.stackIn.pop());
-            }
-        }
-    }
-}
-
-[python]
-class MyQueue:
-    def __init__(self):
-        self.stack_in = []   # For enqueue
-        self.stack_out = []  # For dequeue
-    
-    def push(self, x):
-        self.stack_in.append(x)
-    
-    def pop(self):
-        self._transfer()
-        return self.stack_out.pop()
-    
-    def peek(self):
-        self._transfer()
-        return self.stack_out[-1]
-    
-    def empty(self):
-        return not self.stack_in and not self.stack_out
-    
-    def _transfer(self):
-        if not self.stack_out:
-            while self.stack_in:
-                self.stack_out.append(self.stack_in.pop())
-
-[java]
-import java.util.Stack;
-
-class MyQueue {
-    private Stack<Integer> stackIn;
-    private Stack<Integer> stackOut;
-    
-    public MyQueue() {
-        stackIn = new Stack<>();
-        stackOut = new Stack<>();
-    }
-    
-    public void push(int x) {
-        stackIn.push(x);
-    }
-    
-    public int pop() {
-        transfer();
-        return stackOut.pop();
-    }
-    
-    public int peek() {
-        transfer();
-        return stackOut.peek();
-    }
-    
-    public boolean empty() {
-        return stackIn.isEmpty() && stackOut.isEmpty();
-    }
-    
-    private void transfer() {
-        if (stackOut.isEmpty()) {
-            while (!stackIn.isEmpty()) {
-                stackOut.push(stackIn.pop());
-            }
-        }
-    }
-}
-
-[cpp]
-#include <stack>
-
-class MyQueue {
-private:
-    std::stack<int> stackIn;
-    std::stack<int> stackOut;
-    
-    void transfer() {
-        if (stackOut.empty()) {
-            while (!stackIn.empty()) {
-                stackOut.push(stackIn.top());
-                stackIn.pop();
-            }
-        }
-    }
-    
-public:
-    void push(int x) {
-        stackIn.push(x);
-    }
-    
-    int pop() {
-        transfer();
-        int val = stackOut.top();
-        stackOut.pop();
-        return val;
-    }
-    
-    int peek() {
-        transfer();
-        return stackOut.top();
-    }
-    
-    bool empty() {
-        return stackIn.empty() && stackOut.empty();
-    }
-};
-```
-
-### 2. Sliding Window Maximum
-
-```multi
-[javascript]
-function maxSlidingWindow(nums, k) {
-    const result = [];
-    const deque = [];  // Store indices
-    
-    for (let i = 0; i < nums.length; i++) {
-        // Remove indices outside window
-        while (deque.length > 0 && deque[0] < i - k + 1) {
-            deque.shift();
+    next(val) {
+        this.queue.push(val);
+        this.sum += val;
+        
+        if (this.queue.length > this.size) {
+            this.sum -= this.queue.shift(); // Using simple array for clarity
         }
         
-        // Remove smaller elements (they'll never be max)
-        while (deque.length > 0 && nums[deque[deque.length - 1]] < nums[i]) {
-            deque.pop();
-        }
-        
-        deque.push(i);
-        
-        // Add to result once window is full
-        if (i >= k - 1) {
-            result.push(nums[deque[0]]);
-        }
+        return this.sum / this.queue.length;
     }
-    
-    return result;
-}
-
-// Example: maxSlidingWindow([1,3,-1,-3,5,3,6,7], 3)
-// Output: [3,3,5,5,6,7]
-
-[python]
-from collections import deque
-
-def max_sliding_window(nums, k):
-    """
-    Find max in each sliding window of size k.
-    Input: [1,3,-1,-3,5,3,6,7], k=3
-    Output: [3,3,5,5,6,7]
-    """
-    result = []
-    dq = deque()  # Store indices
-    
-    for i in range(len(nums)):
-        # Remove indices outside window
-        while dq and dq[0] < i - k + 1:
-            dq.popleft()
-        
-        # Remove smaller elements (they'll never be max)
-        while dq and nums[dq[-1]] < nums[i]:
-            dq.pop()
-        
-        dq.append(i)
-        
-        # Add to result once window is full
-        if i >= k - 1:
-            result.append(nums[dq[0]])
-    
-    return result
-
-[java]
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-public class SlidingWindowMax {
-    public int[] maxSlidingWindow(int[] nums, int k) {
-        if (nums.length == 0) return new int[0];
-        
-        int[] result = new int[nums.length - k + 1];
-        Deque<Integer> deque = new ArrayDeque<>();
-        
-        for (int i = 0; i < nums.length; i++) {
-            // Remove indices outside window
-            while (!deque.isEmpty() && deque.peekFirst() < i - k + 1) {
-                deque.pollFirst();
-            }
-            
-            // Remove smaller elements
-            while (!deque.isEmpty() && nums[deque.peekLast()] < nums[i]) {
-                deque.pollLast();
-            }
-            
-            deque.offerLast(i);
-            
-            if (i >= k - 1) {
-                result[i - k + 1] = nums[deque.peekFirst()];
-            }
-        }
-        
-        return result;
-    }
-}
-
-[cpp]
-#include <vector>
-#include <deque>
-
-std::vector<int> maxSlidingWindow(std::vector<int>& nums, int k) {
-    std::vector<int> result;
-    std::deque<int> dq;  // Store indices
-    
-    for (int i = 0; i < nums.size(); i++) {
-        // Remove indices outside window
-        while (!dq.empty() && dq.front() < i - k + 1) {
-            dq.pop_front();
-        }
-        
-        // Remove smaller elements
-        while (!dq.empty() && nums[dq.back()] < nums[i]) {
-            dq.pop_back();
-        }
-        
-        dq.push_back(i);
-        
-        if (i >= k - 1) {
-            result.push_back(nums[dq.front()]);
-        }
-    }
-    
-    return result;
 }
 ```
 
-### 3. Binary Tree Level Order Traversal (BFS)
+### 2. Breadth-First Search (BFS)
+The most common application of queues in algorithms.
+*   **Time**: O(V + E)
+*   **Space**: O(V)
 
-```multi
-[javascript]
-function levelOrder(root) {
-    if (!root) return [];
-    
-    const result = [];
-    const queue = [root];
-    
-    while (queue.length > 0) {
-        const level = [];
-        const levelSize = queue.length;
-        
-        for (let i = 0; i < levelSize; i++) {
-            const node = queue.shift();
-            level.push(node.val);
-            
-            if (node.left) queue.push(node.left);
-            if (node.right) queue.push(node.right);
-        }
-        
-        result.push(level);
-    }
-    
-    return result;
-}
-
-[python]
-from collections import deque
-
-def level_order(root):
-    """
-    Traverse tree level by level.
-    """
-    if not root:
-        return []
-    
-    result = []
-    queue = deque([root])
-    
-    while queue:
-        level = []
-        level_size = len(queue)
-        
-        for _ in range(level_size):
-            node = queue.popleft()
-            level.append(node.val)
-            
-            if node.left:
-                queue.append(node.left)
-            if node.right:
-                queue.append(node.right)
-        
-        result.append(level)
-    
-    return result
-
-[java]
-import java.util.*;
-
-public class LevelOrderTraversal {
-    public List<List<Integer>> levelOrder(TreeNode root) {
-        List<List<Integer>> result = new ArrayList<>();
-        if (root == null) return result;
-        
-        Queue<TreeNode> queue = new LinkedList<>();
-        queue.offer(root);
-        
-        while (!queue.isEmpty()) {
-            List<Integer> level = new ArrayList<>();
-            int levelSize = queue.size();
-            
-            for (int i = 0; i < levelSize; i++) {
-                TreeNode node = queue.poll();
-                level.add(node.val);
-                
-                if (node.left != null) queue.offer(node.left);
-                if (node.right != null) queue.offer(node.right);
-            }
-            
-            result.add(level);
-        }
-        
-        return result;
-    }
-}
-
-[cpp]
-#include <vector>
-#include <queue>
-
-struct TreeNode {
-    int val;
-    TreeNode* left;
-    TreeNode* right;
-    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
-};
-
-std::vector<std::vector<int>> levelOrder(TreeNode* root) {
-    std::vector<std::vector<int>> result;
-    if (!root) return result;
-    
-    std::queue<TreeNode*> q;
-    q.push(root);
-    
-    while (!q.empty()) {
-        std::vector<int> level;
-        int levelSize = q.size();
-        
-        for (int i = 0; i < levelSize; i++) {
-            TreeNode* node = q.front();
-            q.pop();
-            level.push_back(node->val);
-            
-            if (node->left) q.push(node->left);
-            if (node->right) q.push(node->right);
-        }
-        
-        result.push_back(level);
-    }
-    
-    return result;
-}
-```
-
-### 4. Rotten Oranges (Multi-source BFS)
-
-```multi
-[javascript]
-function orangesRotting(grid) {
-    const rows = grid.length;
-    const cols = grid[0].length;
-    const queue = [];
-    let fresh = 0;
-    
-    // Find all rotten oranges and count fresh
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            if (grid[r][c] === 2) {
-                queue.push([r, c, 0]);
-            } else if (grid[r][c] === 1) {
-                fresh++;
-            }
-        }
-    }
-    
-    if (fresh === 0) return 0;
-    
-    const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
-    let maxTime = 0;
-    
-    while (queue.length > 0) {
-        const [r, c, time] = queue.shift();
-        maxTime = Math.max(maxTime, time);
-        
-        for (const [dr, dc] of directions) {
-            const nr = r + dr;
-            const nc = c + dc;
-            
-            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc] === 1) {
-                grid[nr][nc] = 2;
-                fresh--;
-                queue.push([nr, nc, time + 1]);
-            }
-        }
-    }
-    
-    return fresh === 0 ? maxTime : -1;
-}
-
-[python]
-from collections import deque
-
-def oranges_rotting(grid):
-    """
-    Time for all oranges to rot.
-    0 = empty, 1 = fresh, 2 = rotten
-    """
-    rows, cols = len(grid), len(grid[0])
-    queue = deque()
-    fresh = 0
-    
-    # Find all rotten oranges and count fresh
-    for r in range(rows):
-        for c in range(cols):
-            if grid[r][c] == 2:
-                queue.append((r, c, 0))  # (row, col, time)
-            elif grid[r][c] == 1:
-                fresh += 1
-    
-    if fresh == 0:
-        return 0
-    
-    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-    max_time = 0
-    
-    while queue:
-        r, c, time = queue.popleft()
-        max_time = max(max_time, time)
-        
-        for dr, dc in directions:
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
-                grid[nr][nc] = 2
-                fresh -= 1
-                queue.append((nr, nc, time + 1))
-    
-    return max_time if fresh == 0 else -1
-
-[java]
-import java.util.LinkedList;
-import java.util.Queue;
-
-public class RottenOranges {
-    public int orangesRotting(int[][] grid) {
-        int rows = grid.length, cols = grid[0].length;
-        Queue<int[]> queue = new LinkedList<>();
-        int fresh = 0;
-        
-        // Find all rotten oranges and count fresh
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (grid[r][c] == 2) {
-                    queue.offer(new int[]{r, c, 0});
-                } else if (grid[r][c] == 1) {
-                    fresh++;
-                }
-            }
-        }
-        
-        if (fresh == 0) return 0;
-        
-        int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
-        int maxTime = 0;
-        
-        while (!queue.isEmpty()) {
-            int[] curr = queue.poll();
-            int r = curr[0], c = curr[1], time = curr[2];
-            maxTime = Math.max(maxTime, time);
-            
-            for (int[] dir : directions) {
-                int nr = r + dir[0], nc = c + dir[1];
-                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols 
-                    && grid[nr][nc] == 1) {
-                    grid[nr][nc] = 2;
-                    fresh--;
-                    queue.offer(new int[]{nr, nc, time + 1});
-                }
-            }
-        }
-        
-        return fresh == 0 ? maxTime : -1;
-    }
-}
-
-[cpp]
-#include <vector>
-#include <queue>
-#include <tuple>
-
-int orangesRotting(std::vector<std::vector<int>>& grid) {
-    int rows = grid.size(), cols = grid[0].size();
-    std::queue<std::tuple<int, int, int>> q;
-    int fresh = 0;
-    
-    // Find all rotten oranges and count fresh
-    for (int r = 0; r < rows; r++) {
-        for (int c = 0; c < cols; c++) {
-            if (grid[r][c] == 2) {
-                q.push({r, c, 0});
-            } else if (grid[r][c] == 1) {
-                fresh++;
-            }
-        }
-    }
-    
-    if (fresh == 0) return 0;
-    
-    int directions[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
-    int maxTime = 0;
-    
-    while (!q.empty()) {
-        auto [r, c, time] = q.front();
-        q.pop();
-        maxTime = std::max(maxTime, time);
-        
-        for (auto& dir : directions) {
-            int nr = r + dir[0], nc = c + dir[1];
-            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols 
-                && grid[nr][nc] == 1) {
-                grid[nr][nc] = 2;
-                fresh--;
-                q.push({nr, nc, time + 1});
-            }
-        }
-    }
-    
-    return fresh == 0 ? maxTime : -1;
-}
-```
+> **Strategy**: Explore neighbors layer by layer. Push starting node to queue. While queue not empty: dequeue node, process it, enqueue unvisited neighbors.
 
 ---
 
-## Queue vs Stack
+## Essential Practice Questions
 
-| Feature | Queue (FIFO) | Stack (LIFO) |
-|---------|--------------|--------------|
-| Add | Rear (enqueue) | Top (push) |
-| Remove | Front (dequeue) | Top (pop) |
-| Order | First in, first out | Last in, first out |
-| Use Case | BFS, scheduling | DFS, backtracking |
-| Example | Print queue | Undo history |
+| Difficulty | Problem | Concept |
+|:---:|---|---|
+| 🟢 | **Implement Queue using Stacks** | Stack Manipulation |
+| 🟡 | **Design Circular Queue** | Ring Buffer |
+| 🟡 | **Time Necessary to Buy Tickets** | Simulation |
+| 🔴 | **Sliding Window Maximum** | Monotonic Queue (Deque) |
 
----
-
-## Real-World Applications
-
-| Application | How Queue is Used |
-|-------------|-------------------|
-| **Task Scheduling** | CPU process scheduling |
-| **BFS Traversal** | Graph/tree level-order |
-| **Message Queues** | RabbitMQ, Kafka |
-| **Print Queue** | Managing print jobs |
-| **Web Servers** | Request handling |
-| **Buffering** | Video streaming, I/O |
-| **Async Processing** | Background jobs |
-
----
-
-## Key Takeaways
-
-1. **FIFO** - First In, First Out
-2. **All operations O(1)** - enqueue, dequeue, peek
-3. **Use `deque`** in Python for O(1) popleft
-4. **BFS** uses queue, **DFS** uses stack
-5. **Priority Queue** = heap, not standard queue
-6. **Circular Queue** = efficient fixed-size queue
+> [!IMPORTANT]
+> **Sliding Window Maximum** is a classic problem that can be solved in **O(n)** using a Monotonic Deque, whereas a standard queue or heap solution would be slower.

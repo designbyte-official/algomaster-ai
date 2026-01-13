@@ -43,5 +43,82 @@ export const arraysStrings: Topic = {
   youtubeLink: {
     en: "https://www.youtube.com/watch?v=QJNwK2uJyGs", // Arrays & Strings Tutorial
     hi: "https://www.youtube.com/watch?v=z9bZufPHFLU" // Arrays in Hindi
+  },
+  practiceProblems: [
+    {
+      id: "two-sum",
+      title: "Two Sum",
+      description: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice.",
+      difficulty: "Easy",
+      testCases: [
+        {
+          input: { nums: [2, 7, 11, 15], target: 9 },
+          expectedOutput: [0, 1],
+          explanation: "Because nums[0] + nums[1] == 9, we return [0, 1]."
+        },
+        {
+          input: { nums: [3, 2, 4], target: 6 },
+          expectedOutput: [1, 2],
+          explanation: "nums[1] + nums[2] == 6, so we return [1, 2]."
+        },
+        {
+          input: { nums: [3, 3], target: 6 },
+          expectedOutput: [0, 1], 
+          explanation: "nums[0] + nums[1] == 6."
+        }
+      ],
+      starterCode: {
+        javascript: `function twoSum(nums, target) {
+  // Write your code here
+  const map = new Map();
+  for (let i = 0; i < nums.length; i++) {
+    const complement = target - nums[i];
+    if (map.has(complement)) {
+      return [map.get(complement), i];
+    }
+    map.set(nums[i], i);
   }
+  return [];
+}`,
+        python: `def two_sum(nums, target):
+    # Write your code here
+    seen = {}
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i
+    return []`,
+        java: `class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        // Write your code here
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            int complement = target - nums[i];
+            if (map.containsKey(complement)) {
+                return new int[] { map.get(complement), i };
+            }
+            map.put(nums[i], i);
+        }
+        return new int[] {};
+    }
+}`,
+        cpp: `class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        // Write your code here
+        unordered_map<int, int> seen;
+        for (int i = 0; i < nums.size(); ++i) {
+            int complement = target - nums[i];
+            if (seen.count(complement)) {
+                return {seen[complement], i};
+            }
+            seen[nums[i]] = i;
+        }
+        return {};
+    }
+};`
+      }
+    }
+  ]
 }

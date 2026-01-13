@@ -31,29 +31,7 @@ A **flowchart** is a visual diagram that represents an algorithm or process usin
 
 ### Flowchart Structure
 
-```
-    ┌─────────────┐
-    │    START    │
-    └──────┬──────┘
-           ↓
-    ╱‾‾‾‾‾‾‾‾‾‾‾‾╲
-   ╱  Input: n    ╲
-   ╲______________╱
-           ↓
-       ◇───────────◇
-      ╱ n % 2 == 0? ╲
-     ╱               ╲
-    Yes              No
-     ↓                ↓
-┌─────────┐    ┌─────────┐
-│ "Even"  │    │  "Odd"  │
-└────┬────┘    └────┬────┘
-     └──────┬───────┘
-            ↓
-    ┌─────────────┐
-    │     END     │
-    └─────────────┘
-```
+![Check Even or Odd Flowchart](/images/docs/even_odd_flowchart.png)
 
 ### Pseudocode
 
@@ -121,35 +99,7 @@ int main() {
 
 ### Flowchart Structure
 
-```
-        ┌─────────────┐
-        │    START    │
-        └──────┬──────┘
-               ↓
-        ╱‾‾‾‾‾‾‾‾‾‾‾‾╲
-       ╱ Input: a,b,c  ╲
-       ╲______________╱
-               ↓
-           ◇───────◇
-          ╱ a > b?  ╲
-         Yes        No
-          ↓          ↓
-      ◇───────◇  ◇───────◇
-     ╱ a > c?  ╲╱ b > c?  ╲
-    Yes    No  Yes    No
-     ↓      ↓   ↓      ↓
-   max=a max=c max=b max=c
-     └──────┬───┴──────┘
-            ↓
-        ┌─────────┐
-        │ PRINT   │
-        │   max   │
-        └────┬────┘
-             ↓
-        ┌─────────────┐
-        │     END     │
-        └─────────────┘
-```
+![Maximum of Three Numbers Flowchart](/images/docs/max_of_three_flowchart.png)
 
 ```multi
 [javascript]
@@ -235,34 +185,7 @@ cout << "Maximum: " << maxVal << endl;
 
 ### Flowchart Structure
 
-```
-    ┌─────────────┐
-    │    START    │
-    └──────┬──────┘
-           ↓
-    ╱‾‾‾‾‾‾‾‾‾‾‾‾╲
-   ╱  Input: n    ╲
-   ╲______________╱
-           ↓
-    ┌─────────────┐
-    │  sum = 0    │
-    │  i = 1      │
-    └──────┬──────┘
-           ↓
-       ◇───────────◇ ←──────┐
-      ╱   i <= n?   ╲       │
-     Yes             No     │
-      ↓               ↓     │
-┌───────────┐  ┌──────────┐ │
-│ sum += i  │  │  PRINT   │ │
-│  i += 1   │  │   sum    │ │
-└─────┬─────┘  └────┬─────┘ │
-      └─────────────┘       │
-              ↓             │
-         ┌─────────────┐    │
-         │     END     │    │
-         └─────────────┘
-```
+![Sum of N Numbers Flowchart](/images/docs/sum_n_numbers_flowchart.png)
 
 ### Pseudocode
 
@@ -330,81 +253,15 @@ int main() {
 
 ---
 
-## Decision Structures in Flowcharts
+### Decision Structures
 
-### If-Then-Else
-
-```
-         ◇───────────◇
-        ╱ condition?  ╲
-       Yes            No
-        ↓              ↓
-    ┌───────┐    ┌───────┐
-    │ True  │    │ False │
-    │ block │    │ block │
-    └───┬───┘    └───┬───┘
-        └──────┬─────┘
-               ↓
-```
-
-### Multiple Conditions (If-Elif-Else)
-
-```
-         ◇───────────◇
-        ╱ condition1? ╲
-       Yes            No
-        ↓              ↓
-    ┌───────┐    ◇───────────◇
-    │ Block │   ╱ condition2? ╲
-    │   1   │  Yes            No
-    └───────┘   ↓              ↓
-            ┌───────┐    ┌───────┐
-            │ Block │    │ Else  │
-            │   2   │    │ block │
-            └───────┘    └───────┘
-```
+![Common Decision Structures](/images/docs/decision_structures_flowchart.png)
 
 ---
 
-## Loop Structures in Flowcharts
+### Loop Structures
 
-### While Loop
-
-```
-    ┌─────────┐
-    │ init i  │
-    └────┬────┘
-         ↓
-    ◇─────────◇ ←────┐
-   ╱ condition? ╲    │
-  Yes           No   │
-   ↓             ↓   │
-┌─────────┐  ┌─────┐ │
-│ Process │  │ End │ │
-│ i++     │  └─────┘ │
-└────┬────┘          │
-     └───────────────┘
-```
-
-### For Loop (Count-Controlled)
-
-```
-    ┌───────────────┐
-    │ i = start     │
-    └───────┬───────┘
-            ↓
-    ◇─────────────◇ ←────┐
-   ╱ i <= end?     ╲     │
-  Yes              No    │
-   ↓                ↓    │
-┌─────────┐    ┌─────┐   │
-│ Process │    │ End │   │
-└────┬────┘    └─────┘   │
-     ↓                   │
-┌─────────┐              │
-│ i = i+1 │──────────────┘
-└─────────┘
-```
+![Common Loop Structures](/images/docs/loop_structures_flowchart.png)
 
 ---
 

@@ -1,143 +1,118 @@
 # Hashing
 
-**Hashing** is a technique that maps data of arbitrary size to fixed-size values. Hash tables provide **O(1) average** time for insert, delete, and lookup operations.
+> [!NOTE]
+> **Core Concept**: **Hashing** is like a library's filing system. Instead of searching every shelf for a book, you use the book's title to calculate exactly which shelf it's on. This provides **O(1)** average access time.
+
+Hash tables (or Hash Maps) are arguably the most important data structure for coding interviews. They trade space for time, allowing for constant-time lookups.
+
+---
 
 ## Visual Representation
 
+```mermaid
+graph LR
+    subgraph HASH [Hash Function]
+        Input["Key: 'Apple'"] --> HF[Hash Function]
+        HF --> Index["Index: 3"]
+    end
+    
+    subgraph TABLE [Bucket Array]
+        Index --> B3["Bucket[3]: ('Apple', 5)"]
+    end
+    
+    style Input fill:#fff9c4,stroke:#fbc02d
+    style HF fill:#e1bee7,stroke:#8e24aa
+    style Index fill:#b2ebf2,stroke:#00acc1
+    style B3 fill:#c8e6c9,stroke:#43a047
 ```
-Key "apple" → hash("apple") → 7 → Bucket[7]
 
-Hash Table with Chaining:
-┌───┬─────────────────────────────┐
-│ 0 │ → null                      │
-├───┼─────────────────────────────┤
-│ 1 │ → ["cat", 5] → null         │
-├───┼─────────────────────────────┤
-│ 2 │ → null                      │
-├───┼─────────────────────────────┤
-│ 3 │ → ["dog", 3] → ["bat", 8]   │  ← Collision!
-├───┼─────────────────────────────┤
-│ 4 │ → null                      │
-└───┴─────────────────────────────┘
+### Collision Resolution: Chaining
+When two keys hash to the same index, we store them in a list at that index.
+
+```mermaid
+graph LR
+    subgraph BUCKETS
+        direction TB
+        B1["Bucket[1]"] --> L1["('Cat', 10)"]
+        L1 --> L2["('Dog', 20)"]
+        L2 --> NULL1[NULL]
+    end
 ```
 
 ---
 
-## Hash Function Properties
+## Core Operations
 
-| Property | Description |
-|----------|-------------|
-| **Deterministic** | Same input always produces same output |
-| **Uniform** | Keys distributed evenly across buckets |
-| **Fast** | Should compute quickly |
-| **Avalanche** | Small input change = large output change |
+| Operation | Average Case | Worst Case | Description |
+|-----------|--------------|------------|-------------|
+| `put(key, val)` | **O(1)** | O(n) | Insert key-value pair. |
+| `get(key)` | **O(1)** | O(n) | Retrieve value by key. |
+| `remove(key)` | **O(1)** | O(n) | Remove pair by key. |
+| `containsKey(key)`| **O(1)** | O(n) | Check if key exists. |
 
----
-
-## Time Complexity
-
-| Operation | Average | Worst Case |
-|-----------|---------|------------|
-| Insert | O(1) | O(n) |
-| Delete | O(1) | O(n) |
-| Search | O(1) | O(n) |
-| Space | O(n) | O(n) |
-
-*Worst case occurs when all keys hash to same bucket*
+> [!WARNING]
+> **Worst Case O(n)**: This happens when many keys collide at the same index (e.g., a bad hash function puts everything in Bucket 0). Modern languages use randomization or tree-based buckets (Java 8+) to mitigate this.
 
 ---
 
-## Collision Handling
+## Implementation
 
-### 1. Chaining (Separate Chaining)
-
-Each bucket contains a linked list of entries.
+### Hash Table with Chaining
 
 ```multi
 [javascript]
-class HashTableChaining {
-    constructor(size = 10) {
+class HashTable {
+    constructor(size = 50) {
+        this.buckets = new Array(size).fill(null).map(() => []);
         this.size = size;
-        this.buckets = Array.from({ length: size }, () => []);
-        this.count = 0;
     }
     
     _hash(key) {
         let hash = 0;
-        for (const char of String(key)) {
-            hash = (hash * 31 + char.charCodeAt(0)) % this.size;
+        for (let char of key.toString()) {
+            hash = (hash + char.charCodeAt(0)) % this.size;
         }
         return hash;
     }
     
-    put(key, value) {
+    set(key, value) {
         const index = this._hash(key);
         const bucket = this.buckets[index];
+        const existing = bucket.find(item => item.key === key);
         
-        for (let i = 0; i < bucket.length; i++) {
-            if (bucket[i][0] === key) {
-                bucket[i] = [key, value];  // Update
-                return;
-            }
+        if (existing) {
+            existing.value = value; // Update
+        } else {
+            bucket.push({ key, value }); // Insert
         }
-        
-        bucket.push([key, value]);  // Insert
-        this.count++;
     }
     
     get(key) {
         const index = this._hash(key);
         const bucket = this.buckets[index];
-        
-        for (const [k, v] of bucket) {
-            if (k === key) return v;
-        }
-        
-        return undefined;  // Not found
-    }
-    
-    remove(key) {
-        const index = this._hash(key);
-        const bucket = this.buckets[index];
-        
-        for (let i = 0; i < bucket.length; i++) {
-            if (bucket[i][0] === key) {
-                bucket.splice(i, 1);
-                this.count--;
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    contains(key) {
-        return this.get(key) !== undefined;
+        const item = bucket.find(item => item.key === key);
+        return item ? item.value : undefined;
     }
 }
-
 [python]
-class HashTableChaining:
-    def __init__(self, size=10):
+class HashTable:
+    def __init__(self, size=50):
         self.size = size
         self.buckets = [[] for _ in range(size)]
-        self.count = 0
-    
+        
     def _hash(self, key):
         return hash(key) % self.size
-    
+        
     def put(self, key, value):
         index = self._hash(key)
         bucket = self.buckets[index]
         
         for i, (k, v) in enumerate(bucket):
             if k == key:
-                bucket[i] = (key, value)  # Update
+                bucket[i] = (key, value) # Update
                 return
+        bucket.append((key, value)) # Insert
         
-        bucket.append((key, value))  # Insert
-        self.count += 1
-    
     def get(self, key):
         index = self._hash(key)
         bucket = self.buckets[index]
@@ -145,50 +120,27 @@ class HashTableChaining:
         for k, v in bucket:
             if k == key:
                 return v
-        
-        return None  # Not found
-    
-    def remove(self, key):
-        index = self._hash(key)
-        bucket = self.buckets[index]
-        
-        for i, (k, v) in enumerate(bucket):
-            if k == key:
-                bucket.pop(i)
-                self.count -= 1
-                return True
-        
-        return False
-    
-    def contains(self, key):
-        return self.get(key) is not None
-
+        return None
 [java]
-import java.util.ArrayList;
-import java.util.LinkedList;
-
-public class HashTableChaining<K, V> {
-    private LinkedList<Entry<K, V>>[] buckets;
-    private int size;
-    private int count;
-    
-    private static class Entry<K, V> {
+// Simplified implementation
+class HashTable<K, V> {
+    private class Entry<K, V> {
         K key;
         V value;
-        Entry(K key, V value) {
+        Entry<K, V> next;
+        
+        public Entry(K key, V value) {
             this.key = key;
             this.value = value;
         }
     }
     
-    @SuppressWarnings("unchecked")
-    public HashTableChaining(int size) {
+    private Entry<K, V>[] buckets;
+    private int size;
+    
+    public HashTable(int size) {
         this.size = size;
-        this.buckets = new LinkedList[size];
-        for (int i = 0; i < size; i++) {
-            buckets[i] = new LinkedList<>();
-        }
-        this.count = 0;
+        this.buckets = new Entry[size];
     }
     
     private int hash(K key) {
@@ -197,814 +149,104 @@ public class HashTableChaining<K, V> {
     
     public void put(K key, V value) {
         int index = hash(key);
-        LinkedList<Entry<K, V>> bucket = buckets[index];
+        Entry<K, V> head = buckets[index];
         
-        for (Entry<K, V> entry : bucket) {
-            if (entry.key.equals(key)) {
-                entry.value = value;  // Update
+        while (head != null) {
+            if (head.key.equals(key)) {
+                head.value = value; // Update
                 return;
             }
+            head = head.next;
         }
         
-        bucket.add(new Entry<>(key, value));  // Insert
-        count++;
-    }
-    
-    public V get(K key) {
-        int index = hash(key);
-        LinkedList<Entry<K, V>> bucket = buckets[index];
-        
-        for (Entry<K, V> entry : bucket) {
-            if (entry.key.equals(key)) {
-                return entry.value;
-            }
-        }
-        
-        return null;  // Not found
-    }
-    
-    public boolean remove(K key) {
-        int index = hash(key);
-        LinkedList<Entry<K, V>> bucket = buckets[index];
-        
-        for (int i = 0; i < bucket.size(); i++) {
-            if (bucket.get(i).key.equals(key)) {
-                bucket.remove(i);
-                count--;
-                return true;
-            }
-        }
-        
-        return false;
+        Entry<K, V> newEntry = new Entry<>(key, value);
+        newEntry.next = buckets[index];
+        buckets[index] = newEntry; // Insert at head
     }
 }
-
 [cpp]
 #include <vector>
 #include <list>
-#include <functional>
 
 template <typename K, typename V>
-class HashTableChaining {
+class HashTable {
 private:
     std::vector<std::list<std::pair<K, V>>> buckets;
-    size_t size;
-    size_t count;
+    int size;
     
-    size_t hash(const K& key) {
+    int hash(K key) {
         return std::hash<K>{}(key) % size;
     }
     
 public:
-    HashTableChaining(size_t size = 10) : size(size), count(0) {
+    HashTable(int size = 50) : size(size) {
         buckets.resize(size);
     }
     
-    void put(const K& key, const V& value) {
-        size_t index = hash(key);
-        auto& bucket = buckets[index];
-        
-        for (auto& pair : bucket) {
+    void put(K key, V value) {
+        int index = hash(key);
+        for (auto& pair : buckets[index]) {
             if (pair.first == key) {
-                pair.second = value;  // Update
+                pair.second = value; // Update
                 return;
             }
         }
-        
-        bucket.push_back({key, value});  // Insert
-        count++;
-    }
-    
-    V* get(const K& key) {
-        size_t index = hash(key);
-        auto& bucket = buckets[index];
-        
-        for (auto& pair : bucket) {
-            if (pair.first == key) {
-                return &pair.second;
-            }
-        }
-        
-        return nullptr;  // Not found
-    }
-    
-    bool remove(const K& key) {
-        size_t index = hash(key);
-        auto& bucket = buckets[index];
-        
-        for (auto it = bucket.begin(); it != bucket.end(); ++it) {
-            if (it->first == key) {
-                bucket.erase(it);
-                count--;
-                return true;
-            }
-        }
-        
-        return false;
+        buckets[index].push_back({key, value}); // Insert
     }
 };
 ```
 
 ---
 
-## Built-in Hash Maps
+## Common Algorithmic Patterns
 
-```multi
-[javascript]
-// Object (simple hash map)
-const obj = {};
-obj['name'] = 'Alice';
-console.log(obj['name']);
-delete obj['name'];
-console.log('name' in obj);
+### 1. Frequency Counter
+Count occurrences of elements.
 
-// Map (better hash map)
-const map = new Map();
-map.set('name', 'Alice');
-map.get('name');           // 'Alice'
-map.has('name');           // true
-map.delete('name');
-map.size;                  // 0
-
-// Map preserves insertion order
-for (const [key, value] of map) {
-    console.log(key, value);
+```javascript
+const count = {};
+for (const char of "banana") {
+    count[char] = (count[char] || 0) + 1;
 }
-
-// Set (hash set)
-const set = new Set([1, 2, 3]);
-set.add(4);
-set.has(3);    // true
-set.delete(2);
-
-[python]
-# Dictionary (hash map)
-d = {}
-d['name'] = 'Alice'      # Insert - O(1)
-d['age'] = 30
-print(d['name'])          # Lookup - O(1)
-del d['age']              # Delete - O(1)
-print('name' in d)        # Contains - O(1)
-
-# Get with default
-value = d.get('missing', 'default')
-
-# Iterate
-for key in d:
-    print(key, d[key])
-
-for key, value in d.items():
-    print(key, value)
-
-# Counter (specialized hash map)
-from collections import Counter
-counter = Counter("aabbbc")  # {'b': 3, 'a': 2, 'c': 1}
-print(counter.most_common(2))  # [('b', 3), ('a', 2)]
-
-# defaultdict
-from collections import defaultdict
-dd = defaultdict(list)
-dd['fruits'].append('apple')  # No KeyError!
-dd['fruits'].append('banana')
-
-[java]
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
-public class HashMapExample {
-    public static void main(String[] args) {
-        // HashMap
-        HashMap<String, Integer> map = new HashMap<>();
-        map.put("apple", 5);       // Insert
-        map.get("apple");          // Lookup → 5
-        map.containsKey("apple");  // Contains → true
-        map.remove("apple");       // Delete
-        map.getOrDefault("banana", 0);  // Default value
-        
-        // Iterate
-        for (String key : map.keySet()) {
-            System.out.println(key + ": " + map.get(key));
-        }
-        
-        for (Map.Entry<String, Integer> entry : map.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
-        }
-        
-        // HashSet
-        HashSet<Integer> set = new HashSet<>();
-        set.add(1);
-        set.contains(1);  // true
-        set.remove(1);
-    }
-}
-
-[cpp]
-#include <iostream>
-#include <unordered_map>
-#include <unordered_set>
-
-int main() {
-    // unordered_map (hash map)
-    std::unordered_map<std::string, int> map;
-    map["apple"] = 5;              // Insert
-    int val = map["apple"];        // Lookup
-    bool exists = map.count("apple") > 0;
-    map.erase("apple");            // Delete
-    
-    // Iterate
-    for (const auto& [key, value] : map) {
-        std::cout << key << ": " << value << std::endl;
-    }
-    
-    // unordered_set (hash set)
-    std::unordered_set<int> set;
-    set.insert(1);
-    set.count(1);    // 1 if exists
-    set.erase(1);
-    
-    return 0;
-}
+// { b: 1, a: 3, n: 2 }
 ```
 
----
+### 2. Two Sum
+Find two numbers that add up to a target.
+*   **Time**: O(n)
+*   **Space**: O(n)
 
-## Common Problems & Solutions
+> **Strategy**: Store `(target - current_number)` in the hash map. As you iterate, check if the current number is in the map.
 
-### 1. Two Sum
-
-```multi
-[javascript]
+```javascript
 function twoSum(nums, target) {
-    const seen = {};  // value → index
-    
+    const map = new Map();
     for (let i = 0; i < nums.length; i++) {
         const complement = target - nums[i];
-        if (complement in seen) {
-            return [seen[complement], i];
+        if (map.has(complement)) {
+            return [map.get(complement), i];
         }
-        seen[nums[i]] = i;
+        map.set(nums[i], i);
     }
-    
     return [];
 }
-
-// Example: twoSum([2, 7, 11, 15], 9) → [0, 1]
-
-[python]
-def two_sum(nums, target):
-    """
-    Find two numbers that add up to target.
-    Time: O(n), Space: O(n)
-    """
-    seen = {}  # value → index
-    
-    for i, num in enumerate(nums):
-        complement = target - num
-        if complement in seen:
-            return [seen[complement], i]
-        seen[num] = i
-    
-    return []
-
-# Example: two_sum([2, 7, 11, 15], 9) → [0, 1]
-
-[java]
-import java.util.HashMap;
-
-public int[] twoSum(int[] nums, int target) {
-    HashMap<Integer, Integer> seen = new HashMap<>();
-    
-    for (int i = 0; i < nums.length; i++) {
-        int complement = target - nums[i];
-        if (seen.containsKey(complement)) {
-            return new int[]{seen.get(complement), i};
-        }
-        seen.put(nums[i], i);
-    }
-    
-    return new int[]{};
-}
-
-// Example: twoSum([2, 7, 11, 15], 9) → [0, 1]
-
-[cpp]
-#include <vector>
-#include <unordered_map>
-
-std::vector<int> twoSum(std::vector<int>& nums, int target) {
-    std::unordered_map<int, int> seen;
-    
-    for (int i = 0; i < nums.size(); i++) {
-        int complement = target - nums[i];
-        if (seen.count(complement)) {
-            return {seen[complement], i};
-        }
-        seen[nums[i]] = i;
-    }
-    
-    return {};
-}
-
-// Example: twoSum([2, 7, 11, 15], 9) → [0, 1]
 ```
 
-### 2. Group Anagrams
-
-```multi
-[javascript]
-function groupAnagrams(strs) {
-    const groups = {};
-    
-    for (const s of strs) {
-        const key = s.split('').sort().join('');
-        if (!groups[key]) {
-            groups[key] = [];
-        }
-        groups[key].push(s);
-    }
-    
-    return Object.values(groups);
-}
-
-// Example: ["eat","tea","tan","ate","nat","bat"]
-// Output: [["eat","tea","ate"],["tan","nat"],["bat"]]
-
-[python]
-from collections import defaultdict
-
-def group_anagrams(strs):
-    """
-    Group strings that are anagrams of each other.
-    Time: O(n * k log k) where k is max string length
-    """
-    groups = defaultdict(list)
-    
-    for s in strs:
-        key = tuple(sorted(s))  # Sorted chars as key
-        groups[key].append(s)
-    
-    return list(groups.values())
-
-# Example: ["eat","tea","tan","ate","nat","bat"]
-# Output: [["eat","tea","ate"],["tan","nat"],["bat"]]
-
-[java]
-import java.util.*;
-
-public List<List<String>> groupAnagrams(String[] strs) {
-    Map<String, List<String>> groups = new HashMap<>();
-    
-    for (String s : strs) {
-        char[] chars = s.toCharArray();
-        Arrays.sort(chars);
-        String key = new String(chars);
-        
-        groups.computeIfAbsent(key, k -> new ArrayList<>()).add(s);
-    }
-    
-    return new ArrayList<>(groups.values());
-}
-
-// Example: ["eat","tea","tan","ate","nat","bat"]
-// Output: [["eat","tea","ate"],["tan","nat"],["bat"]]
-
-[cpp]
-#include <vector>
-#include <string>
-#include <unordered_map>
-#include <algorithm>
-
-std::vector<std::vector<std::string>> groupAnagrams(std::vector<std::string>& strs) {
-    std::unordered_map<std::string, std::vector<std::string>> groups;
-    
-    for (const auto& s : strs) {
-        std::string key = s;
-        std::sort(key.begin(), key.end());
-        groups[key].push_back(s);
-    }
-    
-    std::vector<std::vector<std::string>> result;
-    for (auto& [key, group] : groups) {
-        result.push_back(std::move(group));
-    }
-    
-    return result;
-}
-
-// Example: ["eat","tea","tan","ate","nat","bat"]
-// Output: [["eat","tea","ate"],["tan","nat"],["bat"]]
-```
-
-### 3. First Unique Character
-
-```multi
-[javascript]
-function firstUniqChar(s) {
-    const count = {};
-    
-    for (const char of s) {
-        count[char] = (count[char] || 0) + 1;
-    }
-    
-    for (let i = 0; i < s.length; i++) {
-        if (count[s[i]] === 1) {
-            return i;
-        }
-    }
-    
-    return -1;
-}
-
-// Example: "leetcode" → 0 (first 'l')
-// Example: "aabb" → -1
-
-[python]
-from collections import Counter
-
-def first_uniq_char(s):
-    """
-    Find index of first non-repeating character.
-    Time: O(n), Space: O(1) - at most 26 chars
-    """
-    count = Counter(s)
-    
-    for i, char in enumerate(s):
-        if count[char] == 1:
-            return i
-    
-    return -1
-
-# Example: "leetcode" → 0 (first 'l')
-# Example: "aabb" → -1
-
-[java]
-import java.util.HashMap;
-
-public int firstUniqChar(String s) {
-    HashMap<Character, Integer> count = new HashMap<>();
-    
-    for (char c : s.toCharArray()) {
-        count.put(c, count.getOrDefault(c, 0) + 1);
-    }
-    
-    for (int i = 0; i < s.length(); i++) {
-        if (count.get(s.charAt(i)) == 1) {
-            return i;
-        }
-    }
-    
-    return -1;
-}
-
-// Example: "leetcode" → 0 (first 'l')
-// Example: "aabb" → -1
-
-[cpp]
-#include <string>
-#include <unordered_map>
-
-int firstUniqChar(std::string s) {
-    std::unordered_map<char, int> count;
-    
-    for (char c : s) {
-        count[c]++;
-    }
-    
-    for (int i = 0; i < s.size(); i++) {
-        if (count[s[i]] == 1) {
-            return i;
-        }
-    }
-    
-    return -1;
-}
-
-// Example: "leetcode" → 0 (first 'l')
-// Example: "aabb" → -1
-```
-
-### 4. Longest Substring Without Repeating
-
-```multi
-[javascript]
-function lengthOfLongestSubstring(s) {
-    const charIndex = {};  // char → last seen index
-    let left = 0;
-    let maxLen = 0;
-    
-    for (let right = 0; right < s.length; right++) {
-        const char = s[right];
-        if (char in charIndex && charIndex[char] >= left) {
-            left = charIndex[char] + 1;
-        }
-        
-        charIndex[char] = right;
-        maxLen = Math.max(maxLen, right - left + 1);
-    }
-    
-    return maxLen;
-}
-
-// Example: "abcabcbb" → 3 ("abc")
-
-[python]
-def length_of_longest_substring(s):
-    """
-    Find length of longest substring with all unique chars.
-    Time: O(n), Space: O(min(n, 26))
-    """
-    char_index = {}  # char → last seen index
-    left = 0
-    max_len = 0
-    
-    for right, char in enumerate(s):
-        if char in char_index and char_index[char] >= left:
-            left = char_index[char] + 1
-        
-        char_index[char] = right
-        max_len = max(max_len, right - left + 1)
-    
-    return max_len
-
-# Example: "abcabcbb" → 3 ("abc")
-
-[java]
-import java.util.HashMap;
-
-public int lengthOfLongestSubstring(String s) {
-    HashMap<Character, Integer> charIndex = new HashMap<>();
-    int left = 0;
-    int maxLen = 0;
-    
-    for (int right = 0; right < s.length(); right++) {
-        char c = s.charAt(right);
-        if (charIndex.containsKey(c) && charIndex.get(c) >= left) {
-            left = charIndex.get(c) + 1;
-        }
-        
-        charIndex.put(c, right);
-        maxLen = Math.max(maxLen, right - left + 1);
-    }
-    
-    return maxLen;
-}
-
-// Example: "abcabcbb" → 3 ("abc")
-
-[cpp]
-#include <string>
-#include <unordered_map>
-#include <algorithm>
-
-int lengthOfLongestSubstring(std::string s) {
-    std::unordered_map<char, int> charIndex;
-    int left = 0;
-    int maxLen = 0;
-    
-    for (int right = 0; right < s.size(); right++) {
-        char c = s[right];
-        if (charIndex.count(c) && charIndex[c] >= left) {
-            left = charIndex[c] + 1;
-        }
-        
-        charIndex[c] = right;
-        maxLen = std::max(maxLen, right - left + 1);
-    }
-    
-    return maxLen;
-}
-
-// Example: "abcabcbb" → 3 ("abc")
-```
-
-### 5. Subarray Sum Equals K
-
-```multi
-[javascript]
-function subarraySum(nums, k) {
-    let count = 0;
-    let prefixSum = 0;
-    const prefixCount = { 0: 1 };  // prefix_sum → count
-    
-    for (const num of nums) {
-        prefixSum += num;
-        
-        // If (prefixSum - k) exists, we found subarrays
-        if ((prefixSum - k) in prefixCount) {
-            count += prefixCount[prefixSum - k];
-        }
-        
-        prefixCount[prefixSum] = (prefixCount[prefixSum] || 0) + 1;
-    }
-    
-    return count;
-}
-
-// Example: subarraySum([1, 1, 1], 2) → 2
-
-[python]
-def subarray_sum(nums, k):
-    """
-    Count subarrays with sum equal to k.
-    Time: O(n), Space: O(n)
-    """
-    count = 0
-    prefix_sum = 0
-    prefix_count = {0: 1}  # prefix_sum → count
-    
-    for num in nums:
-        prefix_sum += num
-        
-        # If (prefix_sum - k) exists, we found subarrays
-        if prefix_sum - k in prefix_count:
-            count += prefix_count[prefix_sum - k]
-        
-        prefix_count[prefix_sum] = prefix_count.get(prefix_sum, 0) + 1
-    
-    return count
-
-# Example: subarray_sum([1, 1, 1], 2) → 2
-
-[java]
-import java.util.HashMap;
-
-public int subarraySum(int[] nums, int k) {
-    int count = 0;
-    int prefixSum = 0;
-    HashMap<Integer, Integer> prefixCount = new HashMap<>();
-    prefixCount.put(0, 1);
-    
-    for (int num : nums) {
-        prefixSum += num;
-        
-        if (prefixCount.containsKey(prefixSum - k)) {
-            count += prefixCount.get(prefixSum - k);
-        }
-        
-        prefixCount.put(prefixSum, 
-            prefixCount.getOrDefault(prefixSum, 0) + 1);
-    }
-    
-    return count;
-}
-
-// Example: subarraySum([1, 1, 1], 2) → 2
-
-[cpp]
-#include <vector>
-#include <unordered_map>
-
-int subarraySum(std::vector<int>& nums, int k) {
-    int count = 0;
-    int prefixSum = 0;
-    std::unordered_map<int, int> prefixCount;
-    prefixCount[0] = 1;
-    
-    for (int num : nums) {
-        prefixSum += num;
-        
-        if (prefixCount.count(prefixSum - k)) {
-            count += prefixCount[prefixSum - k];
-        }
-        
-        prefixCount[prefixSum]++;
-    }
-    
-    return count;
-}
-
-// Example: subarraySum([1, 1, 1], 2) → 2
-```
-
-### 6. LRU Cache
-
-```multi
-[javascript]
-class LRUCache {
-    constructor(capacity) {
-        this.capacity = capacity;
-        this.cache = new Map();
-    }
-    
-    get(key) {
-        if (!this.cache.has(key)) {
-            return -1;
-        }
-        // Move to end (most recently used)
-        const value = this.cache.get(key);
-        this.cache.delete(key);
-        this.cache.set(key, value);
-        return value;
-    }
-    
-    put(key, value) {
-        if (this.cache.has(key)) {
-            this.cache.delete(key);
-        }
-        this.cache.set(key, value);
-        
-        if (this.cache.size > this.capacity) {
-            // Remove oldest (first entry)
-            const oldestKey = this.cache.keys().next().value;
-            this.cache.delete(oldestKey);
-        }
-    }
-}
-
-[python]
-from collections import OrderedDict
-
-class LRUCache:
-    def __init__(self, capacity):
-        self.cache = OrderedDict()
-        self.capacity = capacity
-    
-    def get(self, key):
-        if key not in self.cache:
-            return -1
-        self.cache.move_to_end(key)  # Mark as recently used
-        return self.cache[key]
-    
-    def put(self, key, value):
-        if key in self.cache:
-            self.cache.move_to_end(key)
-        self.cache[key] = value
-        
-        if len(self.cache) > self.capacity:
-            self.cache.popitem(last=False)  # Remove oldest
-
-[java]
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-class LRUCache extends LinkedHashMap<Integer, Integer> {
-    private int capacity;
-    
-    public LRUCache(int capacity) {
-        super(capacity, 0.75f, true);
-        this.capacity = capacity;
-    }
-    
-    public int get(int key) {
-        return super.getOrDefault(key, -1);
-    }
-    
-    public void put(int key, int value) {
-        super.put(key, value);
-    }
-    
-    @Override
-    protected boolean removeEldestEntry(Map.Entry<Integer, Integer> eldest) {
-        return size() > capacity;
-    }
-}
-
-[cpp]
-#include <unordered_map>
-#include <list>
-
-class LRUCache {
-private:
-    int capacity;
-    std::list<std::pair<int, int>> cache;  // {key, value}
-    std::unordered_map<int, std::list<std::pair<int, int>>::iterator> map;
-    
-public:
-    LRUCache(int capacity) : capacity(capacity) {}
-    
-    int get(int key) {
-        if (map.find(key) == map.end()) {
-            return -1;
-        }
-        // Move to front (most recently used)
-        cache.splice(cache.begin(), cache, map[key]);
-        return map[key]->second;
-    }
-    
-    void put(int key, int value) {
-        if (map.find(key) != map.end()) {
-            cache.erase(map[key]);
-        }
-        cache.push_front({key, value});
-        map[key] = cache.begin();
-        
-        if (cache.size() > capacity) {
-            map.erase(cache.back().first);
-            cache.pop_back();
-        }
-    }
-};
-```
+### 3. Group Anagrams
+Group strings that share the same characters.
+*   **Key Idea**: Use a stored version of the string (e.g., "aet" for "tea") as the hash key.
 
 ---
 
-## Key Takeaways
+## Essential Practice Questions
 
-1. **O(1) average** for insert, delete, lookup
-2. **Collisions** handled by chaining or open addressing
-3. **Load factor** affects performance (resize when high)
-4. **Hash Set** = hash map with only keys (no values)
-5. **Counter** = specialized map for counting
-6. **defaultdict** = auto-creates missing keys
-7. Perfect for **frequency counting**, **caching**, **deduplication**
+| Difficulty | Problem | Concept |
+|:---:|---|---|
+| 🟢 | **Two Sum** | Hash Map Lookup |
+| 🟢 | **Contains Duplicate** | Hash Set |
+| 🟡 | **Group Anagrams** | Key Generation |
+| 🟡 | **Top K Frequent Elements** | Frequency Map + Heap |
+| 🟡 | **Longest Consecutive Sequence** | Hash Set O(1) Check |
+
+> [!IMPORTANT]
+> **Longest Consecutive Sequence** is a classic interview question where a Hash Set allows for an **O(n)** solution by enabling O(1) lookups for sequence neighbors, avoiding O(n log n) sorting.

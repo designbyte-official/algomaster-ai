@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TableOfContents } from "@/components/features/docs/table-of-contents"
 import type { Topic } from "@/types/curriculum"
 import { generateTopicSlug } from "@/utils/common/slug"
 
@@ -67,7 +68,12 @@ export function TopicSidebar({ topic, prevTopic, nextTopic }: TopicSidebarProps)
 
   return (
     <aside className="h-full w-full shrink-0 overflow-hidden border-l border-border/30 bg-background/95 backdrop-blur-sm">
-      <div className="h-full overflow-y-auto px-5 py-6 space-y-6 custom-scrollbar">
+      <div className="h-full overflow-y-auto px-5 py-6 space-y-8 custom-scrollbar">
+        {/* Table of Contents - Top Priority */}
+        <TableOfContents content={topic.content} />
+
+        {/* Separator */}
+        <div className="h-px bg-border/40 w-full" />
         {/* Topic Details Section */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
